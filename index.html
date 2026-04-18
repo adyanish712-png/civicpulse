@@ -174,8 +174,9 @@ button,input{font-family:'Syne',sans-serif;}
 
 <script>
 // ── CONFIG ──────────────────────────────────
-// API calls go through our Netlify Function (no CORS issues)
-const API = (endpoint) => `/.netlify/functions/congress?endpoint=${encodeURIComponent(endpoint)}`;
+const API_KEY = 'GuXIhy31WfeoqvI0AlLINTPy4pacfXHY93k7s7QV';
+// Uses allorigins CORS proxy so GitHub Pages can call Congress.gov
+const API = (endpoint) => `https://api.allorigins.win/get?url=${encodeURIComponent('https://api.congress.gov/v3/'+endpoint+'&api_key='+API_KEY)}`;
 
 const STATE_ABBR = {
   'Alabama':'AL','Alaska':'AK','Arizona':'AZ','Arkansas':'AR','California':'CA',
@@ -243,7 +244,11 @@ function totalSaved(){return S.savedLeaders.length+S.savedActions.length;}
 async function callAPI(endpoint){
   const res = await fetch(API(endpoint));
   if(!res.ok) throw new Error(`API error ${res.status}`);
-  return res.json();
+  const wrapper = await res.json();
+  // allorigins wraps the real response in { contents: "..." }
+  const data = JSON.parse(wrapper.contents);
+  if(data.error) throw new Error(data.error);
+  return data;
 }
 
 async function fetchMembersForState(abbr){
