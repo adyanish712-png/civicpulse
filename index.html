@@ -4,7 +4,7 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
 <meta name="description" content="CivicPulse — Real congressional data for your county."/>
-<title>CivicPulse — Know Your County Leaders</title>
+<title>CivicPulse — All Your Leaders, All 50 States</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Syne:wght@500;700;800&display=swap" rel="stylesheet"/>
 <style>
@@ -99,7 +99,7 @@ button,input{font-family:'Syne',sans-serif;}
   <div style="width:72px;height:72px;border-radius:50%;background:rgba(240,192,64,.12);border:2px solid rgba(240,192,64,.35);display:flex;align-items:center;justify-content:center;font-size:2rem;margin-bottom:28px;animation:glow 2.5s ease infinite;">🗳️</div>
   <h1 class="display" style="font-size:clamp(2.2rem,9vw,3.2rem);margin-bottom:14px;">Know Who<br/><span style="color:var(--accent)">Really</span> Serves<br/>Your County</h1>
   <p style="color:var(--muted);font-size:.9rem;line-height:1.75;max-width:300px;margin:0 auto 10px;">Real congressional data. Real votes. A 0–100% People's Benefit Rating on every bill.</p>
-  <div class="live-badge" style="margin:0 auto 24px;"><div class="live-dot"></div>Powered by Congress.gov</div>
+  <div class="live-badge" style="margin:0 auto 24px;"><div class="live-dot"></div>All 50 States — Federal + State</div>
   <div style="width:100%;max-width:300px;margin:0 auto 40px;">
     <div class="feat"><span class="feat-icon">📍</span><span class="feat-text">Pick your state + county — see YOUR real representatives</span></div>
     <div class="feat"><span class="feat-icon">📊</span><span class="feat-text">0–100% People's Benefit Rating from real vote history</span></div>
@@ -252,8 +252,20 @@ async function callAPI(endpoint){
 }
 
 async function fetchMembersForState(abbr){
-  const data = await callAPI(`member?stateCode=${abbr}&currentMember=true&limit=10`);
-  return data.members || [];
+  // Fetch senators and house members separately so we always get both
+  try {
+    const [senData, houseData] = await Promise.all([
+      callAPI('member?stateCode='+abbr+'&currentMember=true&chamber=senate&limit=4'),
+      callAPI('member?stateCode='+abbr+'&currentMember=true&chamber=house&limit=6')
+    ]);
+    const senators = (senData.members||[]).map(m=>({...m,_chamber:'Senate'}));
+    const house    = (houseData.members||[]).map(m=>({...m,_chamber:'House'}));
+    return [...senators, ...house];
+  } catch(e) {
+    // fallback: single call
+    const data = await callAPI('member?stateCode='+abbr+'&currentMember=true&limit=10');
+    return data.members || [];
+  }
 }
 
 async function fetchMemberVotes(bioguideId){
@@ -272,8 +284,10 @@ async function buildLeader(member, county, state){
   // Get chamber from terms
   const terms = member.terms?.item || [];
   const latestTerm = terms[terms.length-1] || {};
-  const chamberRaw = (latestTerm.chamber||member.updateDate||'').toLowerCase();
-  const isSenate = chamberRaw.includes('senate') || (member.title||'').toLowerCase().includes('senator');
+  // Use forced chamber if provided, otherwise detect from terms/title
+  const forcedChamber = member._chamber || '';
+  const chamberRaw = forcedChamber || (latestTerm.chamber||'').toLowerCase();
+  const isSenate = forcedChamber==='Senate' || chamberRaw.includes('senate') || (member.title||'').toLowerCase().includes('senator');
   const chamber = isSenate ? 'Senate' : 'House';
 
   // Fetch votes
@@ -315,6 +329,7 @@ async function buildLeader(member, county, state){
 
   return {
     id, name:displayName, short:lastName,
+    level:'federal',
     role:isSenate?'U.S. Senator':'U.S. Representative',
     county, state, chamber,
     party, partyFull:partyName||'Independent',
@@ -431,21 +446,29 @@ async function confirmLocation(){
   if(!S.selCounty) return;
   document.getElementById('loc-pill').textContent=`📍 ${S.selCounty}, ${S.selState} ▾`;
   S.filter='All'; navTo('feed');
-  showLoading();
   try {
     const abbr = STATE_ABBR[S.selState];
-    const members = await fetchMembersForState(abbr);
-    if(!members.length) throw new Error('No members found for this state');
-    const top = members.slice(0,4);
-    const leaders = await Promise.all(top.map(m=>buildLeader(m,S.selCounty,S.selState)));
-    S.leaders = leaders.filter(Boolean);
-    renderFeed();
+    document.getElementById('feed-list').innerHTML = `
+      <div class="loading-card"><div class="spinner"></div><p style="color:var(--muted);margin-top:14px;font-size:.85rem">Loading <strong style="color:var(--accent)">U.S. Senators + Representatives</strong><br/>from Congress.gov…</p></div>
+      <div class="loading-card" style="opacity:.6"><div class="spinner"></div><p style="color:var(--muted);margin-top:14px;font-size:.85rem">Loading <strong style="color:#5b9cf6">Governor + State Legislators</strong><br/>for ${S.selCounty}, ${S.selState}…</p></div>
+      <div class="loading-card" style="opacity:.35"><div class="spinner"></div><p style="color:var(--muted);margin-top:14px;font-size:.85rem">Calculating People's Benefit Ratings…</p></div>`;
+    const [fedRes, stateRes] = await Promise.allSettled([
+      fetchMembersForState(abbr).then(ms => Promise.all(ms.slice(0,5).map(m=>buildLeader(m,S.selCounty,S.selState)))),
+      fetchStateOfficials(S.selState, S.selCounty)
+    ]);
+    const leaders = [], errors = [];
+    if(fedRes.status==='fulfilled') leaders.push(...fedRes.value.filter(Boolean));
+    else errors.push('Federal: '+fedRes.reason?.message);
+    if(stateRes.status==='fulfilled') leaders.push(...stateRes.value);
+    else errors.push('State officials: '+stateRes.reason?.message);
+    S.leaders = leaders;
+    renderFeed(errors);
   } catch(err) {
     document.getElementById('feed-list').innerHTML=`
       <div style="background:rgba(255,92,92,.08);border:1px solid rgba(255,92,92,.2);border-radius:14px;padding:20px;margin-bottom:12px;font-size:.84rem;color:#ff8c8c;line-height:1.7">
         ⚠️ <strong>Could not load data from Congress.gov.</strong><br/><br/>
-        This can happen if the Netlify function hasn't deployed yet.<br/>
-        <strong>Wait 1–2 minutes after uploading and try again.</strong><br/><br/>
+        This may be a network issue or the API rate limit was reached.<br/>
+        <strong>Check your internet connection and try again.</strong><br/><br/>
         Error: ${err.message}
       </div>
       <button class="btn-primary" onclick="retryLoad()" style="margin-top:4px">🔄 Try Again</button>`;
@@ -461,11 +484,38 @@ function showLoading(){
 
 async function retryLoad(){ await confirmLocation(); }
 
-// ── FEED ─────────────────────────────────────
-const FILTERS = ['All','Senate','House','✅ Top Rated','❌ Low Rated'];
+// ═══ CLAUDE AI — Governor + State Officials (all 50 states) ═══
+async function fetchStateOfficials(state, county){
+  const prompt = `You are a nonpartisan civic data assistant. Generate accurate data for current elected state officials for ${county} County, ${state}. Return ONLY a valid JSON array, no markdown, no explanation. Include exactly 6 officials: 1 Governor, 1 Lieutenant Governor, 2 State Senators for the ${county} area, 2 State Representatives for the ${county} area. Each object must have: {"id":"unique-string","name":"Full Name","short":"LastName","role":"Governor","level":"state","county":"${county}","state":"${state}","chamber":"Executive OR State Senate OR State House","party":"D OR R OR I","partyFull":"Democrat OR Republican OR Independent","initials":"XX","color":"#2563eb OR #dc2626 OR #d97706","isIncumbent":true,"isCandidate":false,"helped":3,"harmed":2,"voteRecord":[{"b":"Bill or action description","p":true}],"actions":[{"id":1,"icon":"✅","impact":"helped","area":"Healthcare","text":"Specific action affecting ${state} residents.","date":"2026"},{"id":2,"icon":"❌","impact":"harmed","area":"Economy","text":"Specific action.","date":"2025"},{"id":3,"icon":"✅","impact":"helped","area":"Education","text":"Action.","date":"2025"},{"id":4,"icon":"✅","impact":"helped","area":"Infrastructure","text":"Action.","date":"2024"},{"id":5,"icon":"❌","impact":"harmed","area":"Environment","text":"Action.","date":"2024"}],"stats":[{"l":"Term","v":"2023-2027"},{"l":"Bills Signed","v":"14"},{"l":"Approval","v":"51%"},{"l":"Party","v":"Democrat"},{"l":"Level","v":"State"}],"bio":"Brief 1-sentence bio.","dataSource":"ai-generated"}. Use 10-15 voteRecord items. helped+harmed must equal 5. Use real current officeholders where known. Return only the JSON array.`;
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 1000,
+      messages: [{role: 'user', content: prompt}]
+    })
+  });
+  const data = await res.json();
+  const text = data.content?.find(b=>b.type==='text')?.text || '';
+  const parsed = JSON.parse(text.replace(/```json|```/g,'').trim());
+  return parsed.map(l => ({
+    ...l,
+    voteRecord: (l.voteRecord||[]).map(v => typeof v==='object' && 'p' in v ? v : {b:String(v), p:true})
+  }));
+}
 
-function renderFeed(){
-  document.getElementById('feed-sub').textContent=`${S.leaders.length} real representative${S.leaders.length!==1?'s':''} found`;
+
+// ── FEED ─────────────────────────────────────
+const FILTERS = ['All','🇺🇸 Federal','🏛️ State','U.S. Senate','U.S. House','Governor','State Senate','State House','✅ Top Rated','❌ Low Rated'];
+
+function renderFeed(errors=[]){
+  const fedCount = S.leaders.filter(l=>l.level==='federal').length;
+  const staCount = S.leaders.filter(l=>l.level==='state').length;
+  document.getElementById('feed-sub').textContent=`🇺🇸 ${fedCount} federal · 🏛️ ${staCount} state officials`;
+  // Show errors if any
+  let errBanner = '';
+  if(errors.length) errBanner = `<div style="background:rgba(240,192,64,.07);border:1px solid rgba(240,192,64,.2);border-radius:12px;padding:10px 14px;margin-bottom:12px;font-size:.75rem;color:#a37c00">⚠️ Partial data: ${errors.join(' | ')}</div>`;
   document.getElementById('feed-chips').innerHTML=FILTERS.map(f=>
     `<button class="chip${S.filter===f?' active':''}" onclick="setFilter('${f}')">${f}</button>`
   ).join('');
@@ -475,13 +525,18 @@ function renderFeed(){
     list.innerHTML=`<div style="text-align:center;padding:60px 20px;color:var(--dim)"><div style="font-size:2.5rem;margin-bottom:12px">🔍</div><p>No leaders match this filter.</p></div>`;
     return;
   }
-  list.innerHTML=filtered.map((l,i)=>cardHTML(l,i)).join('');
+  list.innerHTML=errBanner+filtered.map((l,i)=>cardHTML(l,i)).join('');
 }
 
 function filterLeaders(ls){
   const f=S.filter;
-  if(f==='Senate') return ls.filter(l=>l.chamber==='Senate');
-  if(f==='House') return ls.filter(l=>l.chamber==='House');
+  if(f==='🇺🇸 Federal') return ls.filter(l=>l.level==='federal');
+  if(f==='🏛️ State') return ls.filter(l=>l.level==='state');
+  if(f==='U.S. Senate') return ls.filter(l=>l.chamber==='Senate');
+  if(f==='U.S. House') return ls.filter(l=>l.chamber==='House');
+  if(f==='Governor') return ls.filter(l=>l.role==='Governor'||l.role==='Lieutenant Governor');
+  if(f==='State Senate') return ls.filter(l=>l.chamber==='State Senate');
+  if(f==='State House') return ls.filter(l=>l.chamber==='State House');
   if(f==='✅ Top Rated') return ls.filter(l=>{const r=benefitRating(l);return r!==null&&r>=70;});
   if(f==='❌ Low Rated') return ls.filter(l=>{const r=benefitRating(l);return r!==null&&r<50;});
   return ls;
@@ -512,9 +567,9 @@ function cardHTML(l,i){
   return `
   <div class="card fade-up ${delays}">
     <div class="stripe" style="background:linear-gradient(90deg,${l.color},${l.color}33)"></div>
-    <div style="padding:5px 16px;display:flex;align-items:center;justify-content:space-between;background:rgba(61,220,132,.04);border-bottom:1px solid rgba(61,220,132,.1)">
-      <span style="font-size:.7rem;font-weight:800;color:var(--green)">🏛️ INCUMBENT · ${l.chamber}</span>
-      <div class="live-badge"><div class="live-dot"></div>Real Data</div>
+    <div style="padding:5px 16px;display:flex;align-items:center;justify-content:space-between;background:${l.level==='state'?'rgba(91,156,246,.07)':'rgba(61,220,132,.04)'};border-bottom:1px solid ${l.level==='state'?'rgba(91,156,246,.14)':'rgba(61,220,132,.1)'}">
+      <span style="font-size:.68rem;font-weight:800;color:${l.level==='state'?'#5b9cf6':'var(--green)'}">${l.level==='state'?'🏛️':'🇺🇸'} ${(l.role||l.chamber||'').toUpperCase()}</span>
+      ${l.level==='state'?'<div class="ai-badge">✦ AI Research</div>':'<div class="live-badge"><div class="live-dot"></div>Congress.gov</div>'}
     </div>
     <div style="padding:14px 16px">
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
