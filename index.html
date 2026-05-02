@@ -2,200 +2,657 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
-<title>CivicPulse — All Your Leaders, All 50 States</title>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Syne:wght@500;700;800&display=swap" rel="stylesheet"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
+<title>CivicPulse — Know Your Leaders</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet"/>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
-:root{--bg:#08090d;--card:#111318;--accent:#f0c040;--green:#3ddc84;--red:#ff5c5c;--muted:#6b7280;--dim:#374151;--text:#e8eaf0;--sub:#9ca3af;--border:rgba(255,255,255,.07);--border2:rgba(255,255,255,.04);}
-html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;-webkit-tap-highlight-color:transparent;}
-button,input{font-family:'Syne',sans-serif;}
+:root{--bg:#07080c;--s1:#10131a;--s2:#181c26;--gold:#f5c842;--green:#36d67a;--red:#f0564a;--blue:#4f8ef7;--text:#eceef4;--sub:#8b909e;--dim:#3a3f4e;--b1:rgba(255,255,255,.06);--b2:rgba(255,255,255,.03);}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;-webkit-tap-highlight-color:transparent;}
+button,input{font-family:'DM Sans',sans-serif;}
 ::-webkit-scrollbar{display:none;}
-#app{max-width:430px;margin:0 auto;min-height:100vh;}
-.screen{display:none;min-height:100vh;flex-direction:column;}
-.screen.active{display:flex;}
-@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
-@keyframes glow{0%,100%{box-shadow:0 0 14px rgba(240,192,64,.3)}50%{box-shadow:0 0 32px rgba(240,192,64,.65)}}
+#root{max-width:420px;margin:0 auto;min-height:100vh;}
+.screen{display:none;flex-direction:column;min-height:100vh;}
+.screen.on{display:flex;}
+.hd{font-family:'Bebas Neue',sans-serif;letter-spacing:.04em;line-height:1;}
+.lbl{font-size:.6rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--sub);}
+@keyframes up{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes glow{0%,100%{box-shadow:0 0 12px rgba(245,200,66,.25)}50%{box-shadow:0 0 28px rgba(245,200,66,.55)}}
 @keyframes spin{to{transform:rotate(360deg)}}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-.fu{animation:fadeUp .4s ease both;}.d1{animation-delay:.07s}.d2{animation-delay:.14s}.d3{animation-delay:.21s}.d4{animation-delay:.28s}
-.display{font-family:'Bebas Neue',sans-serif;letter-spacing:1px;line-height:1;}
-.label{font-size:.65rem;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);}
-#bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:rgba(8,9,13,.97);backdrop-filter:blur(20px);border-top:1px solid var(--border);display:none;z-index:200;padding:8px 0 20px;}
-#bottom-nav.visible{display:flex;}
-.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 0;background:none;border:none;color:var(--muted);font-size:.62rem;font-weight:700;letter-spacing:.5px;text-transform:uppercase;transition:color .2s;position:relative;cursor:pointer;}
-.nav-btn.active{color:var(--accent);}
-.nav-badge{position:absolute;top:2px;right:50%;transform:translateX(155%);background:var(--accent);color:#000;font-size:.52rem;font-weight:800;border-radius:20px;padding:1px 5px;min-width:14px;text-align:center;display:none;}
-.nav-badge.on{display:block;}
-.card{background:var(--card);border:1px solid var(--border);border-radius:20px;overflow:hidden;margin-bottom:14px;}
-.stripe{height:3px;}
-.btn-primary{background:var(--accent);color:#000;border:none;border-radius:14px;padding:14px 32px;font-weight:800;font-size:1rem;font-family:'Syne',sans-serif;width:100%;cursor:pointer;animation:glow 2.5s ease infinite;}
-.btn-primary:disabled{opacity:.35;animation:none;cursor:not-allowed;}
-.btn-ghost{background:none;border:none;color:var(--accent);font-weight:700;font-size:.78rem;font-family:'Syne',sans-serif;cursor:pointer;}
-.search-wrap{position:relative;margin-bottom:12px;}
-.s-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);pointer-events:none;}
-.search-input{width:100%;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:11px 14px 11px 38px;color:var(--text);font-size:.875rem;outline:none;}
-.search-input:focus{border-color:var(--accent);}
-.chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:14px;scrollbar-width:none;}
-.chip{flex-shrink:0;padding:5px 12px;border-radius:20px;border:1px solid var(--border);background:var(--card);color:var(--muted);font-size:.74rem;font-weight:700;cursor:pointer;transition:all .2s;white-space:nowrap;}
-.chip.active{background:var(--accent);color:#000;border-color:var(--accent);}
-.avatar{border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-weight:800;letter-spacing:1px;flex-shrink:0;}
-.tabs{display:flex;border-bottom:1px solid var(--border);padding:0 20px;}
-.tab-btn{flex:1;padding:12px 0;background:none;border:none;border-bottom:2px solid transparent;color:var(--muted);font-weight:700;font-size:.8rem;font-family:'Syne',sans-serif;transition:all .2s;cursor:pointer;}
-.tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);}
-.tab-panel{display:none;padding:16px;}
-.tab-panel.active{display:block;}
-.pill{display:inline-block;font-size:.6rem;font-weight:800;letter-spacing:.8px;text-transform:uppercase;padding:2px 8px;border-radius:20px;white-space:nowrap;}
-.header-bar{position:sticky;top:0;z-index:100;background:rgba(8,9,13,.95);backdrop-filter:blur(16px);padding:14px 20px 0;}
-.logo{font-family:'Bebas Neue',sans-serif;font-size:1.9rem;letter-spacing:2px;color:var(--accent);}
-.logo span{color:var(--text);}
-.loc-btn{background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:20px;padding:4px 12px;color:var(--sub);font-size:.72rem;font-weight:700;cursor:pointer;}
-.live-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(61,220,132,.1);border:1px solid rgba(61,220,132,.25);border-radius:20px;padding:3px 10px;font-size:.62rem;font-weight:800;color:var(--green);text-transform:uppercase;letter-spacing:.8px;}
-.live-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 1.4s ease infinite;}
-.spinner{width:28px;height:28px;border:3px solid rgba(240,192,64,.2);border-top:3px solid var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto;}
-.loading-card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:32px;text-align:center;margin-bottom:12px;}
-.step-bar{display:flex;gap:8px;margin-bottom:24px;}
-.step{flex:1;padding:8px 12px;border-radius:12px;display:flex;align-items:center;gap:8px;border:1px solid var(--border);background:rgba(255,255,255,.04);transition:all .3s;}
-.step.active{background:rgba(240,192,64,.12);border-color:rgba(240,192,64,.4);}
-.step.done{background:rgba(61,220,132,.08);border-color:rgba(61,220,132,.3);}
-.step-num{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:800;flex-shrink:0;background:rgba(255,255,255,.1);color:var(--muted);}
-.step.active .step-num{background:var(--accent);color:#000;}
-.step.done .step-num{background:var(--green);color:#000;}
-.step-lbl{font-size:.62rem;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--muted);}
-.step.active .step-lbl{color:var(--accent);}
-.step.done .step-lbl{color:var(--green);}
-.step-val{font-size:.7rem;color:var(--sub);margin-top:1px;}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
-.info-box{padding:14px 16px;border-radius:14px;background:rgba(240,192,64,.06);border:1px solid rgba(240,192,64,.15);margin-top:12px;}
-.info-title{font-size:.72rem;color:var(--accent);font-weight:700;margin-bottom:4px;text-transform:uppercase;letter-spacing:.8px;}
-.saved-banner{background:rgba(240,192,64,.07);border-bottom:1px solid rgba(240,192,64,.12);padding:5px 16px;display:flex;justify-content:space-between;align-items:center;}
-.saved-banner span{font-size:.63rem;color:#a37c00;font-weight:700;letter-spacing:.8px;}
-.rm-btn{background:none;border:none;color:var(--muted);font-size:.7rem;cursor:pointer;}
-.scroll-content{flex:1;overflow-y:auto;padding-bottom:100px;}
-.pad{padding:0 16px;}
-.feat{display:flex;align-items:flex-start;gap:12px;background:rgba(255,255,255,.04);border-radius:12px;padding:10px 14px;border:1px solid var(--border2);margin-bottom:8px;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.35}}
+.au{animation:up .38s ease both;}.d1{animation-delay:.06s}.d2{animation-delay:.12s}.d3{animation-delay:.18s}.d4{animation-delay:.24s}.d5{animation-delay:.3s}
+#nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:420px;background:rgba(7,8,12,.96);backdrop-filter:blur(18px);border-top:1px solid var(--b1);display:none;z-index:100;padding:8px 0 20px;}
+#nav.on{display:flex;}
+.nb{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 0;background:none;border:none;color:var(--sub);font-size:.58rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;transition:color .18s;position:relative;}
+.nb.on{color:var(--gold);}
+.nbadge{position:absolute;top:4px;right:calc(50% - 20px);background:var(--gold);color:#000;font-size:.48rem;font-weight:800;border-radius:10px;padding:1px 4px;display:none;}
+.nbadge.on{display:block;}
+.card{background:var(--s1);border:1px solid var(--b1);border-radius:18px;overflow:hidden;margin-bottom:12px;}
+.bar{height:3px;}
+.btn{background:var(--gold);color:#000;border:none;border-radius:12px;padding:13px 28px;font-weight:700;font-size:.9rem;width:100%;cursor:pointer;}
+.btn:disabled{opacity:.3;cursor:default;}
+.btn-o{background:none;border:1px solid var(--b1);border-radius:12px;padding:5px 11px;color:var(--sub);font-size:.7rem;cursor:pointer;}
+.btn-g{background:none;border:none;color:var(--gold);font-size:.75rem;font-weight:700;cursor:pointer;}
+.chips{display:flex;gap:7px;overflow-x:auto;padding-bottom:12px;scrollbar-width:none;}
+.chip{flex-shrink:0;padding:5px 13px;border-radius:20px;border:1px solid var(--b1);background:var(--s1);color:var(--sub);font-size:.72rem;font-weight:700;cursor:pointer;white-space:nowrap;}
+.chip.on{background:var(--gold);color:#000;border-color:var(--gold);}
+.srch{position:relative;margin-bottom:10px;}
+.srch input{width:100%;background:var(--s1);border:1px solid var(--b1);border-radius:11px;padding:10px 12px 10px 36px;color:var(--text);font-size:.85rem;outline:none;}
+.srch input:focus{border-color:var(--gold);}
+.si{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:.9rem;pointer-events:none;}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.spin{width:26px;height:26px;border:2.5px solid rgba(245,200,66,.18);border-top:2.5px solid var(--gold);border-radius:50%;animation:spin .75s linear infinite;margin:0 auto;}
+.pill{display:inline-block;font-size:.56rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:2px 8px;border-radius:20px;white-space:nowrap;}
+.av{border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;flex-shrink:0;}
+.tabs{display:flex;border-bottom:1px solid var(--b1);padding:0 16px;}
+.tab{flex:1;padding:11px 0;background:none;border:none;border-bottom:2px solid transparent;color:var(--sub);font-weight:700;font-size:.78rem;cursor:pointer;}
+.tab.on{color:var(--gold);border-bottom-color:var(--gold);}
+.tp{display:none;padding:14px 16px;}
+.tp.on{display:block;}
+.stepbar{display:flex;gap:8px;margin-bottom:22px;}
+.step{flex:1;padding:9px 11px;border-radius:11px;display:flex;align-items:center;gap:8px;border:1px solid var(--b1);background:var(--s2);}
+.step.act{background:rgba(245,200,66,.1);border-color:rgba(245,200,66,.35);}
+.step.done{background:rgba(54,214,122,.07);border-color:rgba(54,214,122,.28);}
+.sn{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:800;flex-shrink:0;background:var(--dim);color:var(--sub);}
+.step.act .sn{background:var(--gold);color:#000;}
+.step.done .sn{background:var(--green);color:#000;}
+.ldot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:blink 1.4s ease infinite;display:inline-block;}
+.sticky{position:sticky;top:0;z-index:50;background:rgba(7,8,12,.94);backdrop-filter:blur(16px);padding:13px 16px 0;}
+.scroll{flex:1;overflow-y:auto;padding-bottom:90px;}
+.pad{padding:0 14px;}
+.infobox{background:rgba(245,200,66,.05);border:1px solid rgba(245,200,66,.14);border-radius:12px;padding:13px 15px;margin-top:10px;}
+.svbar{background:rgba(245,200,66,.06);border-bottom:1px solid rgba(245,200,66,.11);padding:5px 14px;display:flex;justify-content:space-between;align-items:center;}
+.svbar span{font-size:.58rem;color:#9a7a10;font-weight:700;letter-spacing:.06em;text-transform:uppercase;}
+.rm{background:none;border:none;color:var(--sub);font-size:.68rem;cursor:pointer;}
+.feat{display:flex;align-items:flex-start;gap:11px;background:var(--s2);border-radius:11px;padding:10px 13px;border:1px solid var(--b2);margin-bottom:7px;}
 </style>
 </head>
 <body>
-<div id="app">
-<div id="screen-onboard" class="screen active" style="background:radial-gradient(ellipse at 50% -10%,#1c1f30,#08090d 65%);align-items:center;justify-content:center;padding:48px 28px;text-align:center;">
-  <div style="width:72px;height:72px;border-radius:50%;background:rgba(240,192,64,.12);border:2px solid rgba(240,192,64,.35);display:flex;align-items:center;justify-content:center;font-size:2rem;margin-bottom:28px;animation:glow 2.5s ease infinite">&#x1F5F3;</div>
-  <h1 class="display" style="font-size:clamp(2.2rem,9vw,3.2rem);margin-bottom:14px">Know Who<br/><span style="color:var(--accent)">Really</span> Serves<br/>Your County</h1>
-  <p style="color:var(--muted);font-size:.9rem;line-height:1.75;max-width:300px;margin:0 auto 10px">Every level of government. All 50 states. Real votes. Real accountability.</p>
-  <div class="live-badge" style="margin:0 auto 24px"><div class="live-dot"></div>All 50 States</div>
-  <div style="width:100%;max-width:300px;margin:0 auto 36px">
-    <div class="feat"><span style="font-size:.95rem;flex-shrink:0">&#x1F1FA;&#x1F1F8;</span><span style="font-size:.8rem;color:var(--sub);line-height:1.5">U.S. Senators + Representatives with vote records</span></div>
-    <div class="feat"><span style="font-size:.95rem;flex-shrink:0">&#x1F3E2;</span><span style="font-size:.8rem;color:var(--sub);line-height:1.5">Governor + Lt. Governor — who signs bills affecting you</span></div>
-    <div class="feat"><span style="font-size:.95rem;flex-shrink:0">&#x1F3DB;</span><span style="font-size:.8rem;color:var(--sub);line-height:1.5">State Senators + State Representatives</span></div>
-    <div class="feat"><span style="font-size:.95rem;flex-shrink:0">&#x1F4CA;</span><span style="font-size:.8rem;color:var(--sub);line-height:1.5">0-100% People's Benefit Rating on every leader</span></div>
-    <div class="feat"><span style="font-size:.95rem;flex-shrink:0">&#x1F516;</span><span style="font-size:.8rem;color:var(--sub);line-height:1.5">Save any vote or leader permanently</span></div>
+<div id="root">
+
+<!-- ONBOARD -->
+<div id="s-onboard" class="screen on" style="background:radial-gradient(ellipse at 50% -8%,#171d2e,var(--bg) 60%);align-items:center;justify-content:center;padding:48px 24px;text-align:center;">
+  <div style="width:68px;height:68px;border-radius:50%;background:rgba(245,200,66,.1);border:2px solid rgba(245,200,66,.3);display:flex;align-items:center;justify-content:center;font-size:1.9rem;margin-bottom:26px;animation:glow 2.5s ease infinite">🗳️</div>
+  <h1 class="hd" style="font-size:clamp(2rem,8.5vw,3rem);margin-bottom:12px">Know Who<br/><span style="color:var(--gold)">Really</span> Serves<br/>Your County</h1>
+  <p style="color:var(--sub);font-size:.85rem;line-height:1.75;max-width:280px;margin:0 auto 18px">All 50 states · Every level of government · Real votes · Real accountability</p>
+  <div style="display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:22px">
+    <span class="ldot"></span>
+    <span style="font-size:.62rem;font-weight:700;color:var(--green);letter-spacing:.08em;text-transform:uppercase">Works for All 50 States</span>
   </div>
-  <button class="btn-primary" onclick="showScreen('location')" style="max-width:300px">Get Started &#x2192;</button>
-  <p style="font-size:.7rem;color:var(--dim);margin-top:16px">Free · Non-partisan · No account needed</p>
-</div>
-<div id="screen-location" class="screen" style="padding:52px 24px 32px;flex-direction:column;">
-  <div class="step-bar">
-    <div class="step active" id="step-1"><div class="step-num" id="sn1">1</div><div><div class="step-lbl">State</div><div class="step-val" id="s1v">Choose one</div></div></div>
-    <div class="step" id="step-2"><div class="step-num" id="sn2">2</div><div><div class="step-lbl">County</div><div class="step-val" id="s2v">Choose one</div></div></div>
+  <div style="width:100%;max-width:290px;margin:0 auto 34px">
+    <div class="feat"><span style="font-size:.9rem;flex-shrink:0">🇺🇸</span><span style="font-size:.78rem;color:var(--sub);line-height:1.5">U.S. Senators + Representatives — real vote history</span></div>
+    <div class="feat"><span style="font-size:.9rem;flex-shrink:0">🏢</span><span style="font-size:.78rem;color:var(--sub);line-height:1.5">Governor + Lt. Governor — who signs the bills</span></div>
+    <div class="feat"><span style="font-size:.9rem;flex-shrink:0">🏛️</span><span style="font-size:.78rem;color:var(--sub);line-height:1.5">State Senators + State Representatives</span></div>
+    <div class="feat"><span style="font-size:.9rem;flex-shrink:0">📊</span><span style="font-size:.78rem;color:var(--sub);line-height:1.5">0–100% People's Benefit Rating on every leader</span></div>
+    <div class="feat"><span style="font-size:.9rem;flex-shrink:0">🔖</span><span style="font-size:.78rem;color:var(--sub);line-height:1.5">Save any leader or vote permanently</span></div>
   </div>
-  <h1 class="display" id="loc-title" style="font-size:2rem;margin-bottom:6px">Pick Your State</h1>
-  <p id="loc-sub" style="color:var(--muted);font-size:.83rem;line-height:1.6;margin-bottom:14px">We'll load all your representatives — federal and state.</p>
-  <button class="btn-ghost" id="back-btn" style="display:none;text-align:left;margin-bottom:10px;padding:0" onclick="backToState()">&#x2190; Change State</button>
-  <div class="search-wrap"><span class="s-icon">&#x1F50D;</span><input class="search-input" id="loc-search" placeholder="Search..." oninput="filterList()"/></div>
-  <div style="flex:1;overflow-y:auto;margin-bottom:16px"><div class="grid2" id="loc-grid"></div></div>
-  <button class="btn-primary" id="loc-btn" disabled onclick="confirmLocation()">Select a state to continue</button>
+  <button class="btn" onclick="go('location')" style="max-width:280px;animation:glow 2.5s ease infinite">Get Started →</button>
+  <p style="font-size:.65rem;color:var(--dim);margin-top:14px">Free · Non-partisan · No account needed</p>
 </div>
-<div id="screen-feed" class="screen" style="flex-direction:column;">
-  <div class="header-bar">
+
+<!-- LOCATION -->
+<div id="s-location" class="screen" style="padding:50px 16px 24px;flex-direction:column;">
+  <div class="stepbar">
+    <div class="step act" id="st1"><div class="sn" id="sn1">1</div><div><div class="lbl">State</div><div style="font-size:.7rem;color:var(--sub);margin-top:1px" id="sv1">Choose one</div></div></div>
+    <div class="step" id="st2"><div class="sn" id="sn2">2</div><div><div class="lbl">County</div><div style="font-size:.7rem;color:var(--sub);margin-top:1px" id="sv2">Choose one</div></div></div>
+  </div>
+  <h2 class="hd" id="loch" style="font-size:1.85rem;margin-bottom:5px">Pick Your State</h2>
+  <p id="locp" style="color:var(--sub);font-size:.8rem;line-height:1.6;margin-bottom:12px">Select your state to find all your representatives.</p>
+  <button class="btn-g" id="backbtn" style="display:none;text-align:left;margin-bottom:8px;padding:0" onclick="backState()">← Change State</button>
+  <div class="srch"><span class="si">🔍</span><input id="locq" placeholder="Search…" oninput="filterLoc()"/></div>
+  <div style="flex:1;overflow-y:auto;margin-bottom:14px"><div class="g2" id="locgrid"></div></div>
+  <button class="btn" id="locbtn" disabled onclick="loadLeaders()">Select a state to continue</button>
+</div>
+
+<!-- FEED -->
+<div id="s-feed" class="screen" style="flex-direction:column;">
+  <div class="sticky">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
-      <div class="logo"><span>Civic</span>Pulse</div>
-      <button class="loc-btn" onclick="showScreen('location')" id="loc-pill">&#x1F4CD; ... &#x25BE;</button>
+      <span class="hd" style="font-size:1.75rem;color:var(--gold)">Civic<span style="color:var(--text)">Pulse</span></span>
+      <button class="btn-o" onclick="go('location')" id="locpill">📍 … ▾</button>
     </div>
-    <p id="feed-sub" style="color:var(--muted);font-size:.76rem;margin-bottom:12px"></p>
-    <div class="chips" id="feed-chips"></div>
+    <p id="feedmeta" style="color:var(--sub);font-size:.73rem;margin-bottom:10px"></p>
+    <div class="chips" id="feedchips"></div>
   </div>
-  <div class="scroll-content pad" id="feed-list"></div>
+  <div class="scroll pad" id="feedlist"></div>
 </div>
-<div id="screen-detail" class="screen" style="flex-direction:column;">
-  <div style="overflow-y:auto;flex:1" id="detail-scroll">
-    <div id="detail-hero"></div>
-    <div class="tabs" id="detail-tabs"></div>
-    <div id="detail-panels"></div>
+
+<!-- DETAIL -->
+<div id="s-detail" class="screen" style="flex-direction:column;">
+  <div style="overflow-y:auto;flex:1" id="detscr">
+    <div id="dhero"></div>
+    <div class="tabs" id="dtabs"></div>
+    <div id="dpanels"></div>
   </div>
 </div>
-<div id="screen-saved" class="screen" style="flex-direction:column;">
-  <div class="header-bar">
-    <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:4px">
-      <h2 class="display" style="font-size:2rem">Saved</h2>
-      <span id="saved-count" style="font-size:.72rem;color:var(--muted);font-weight:700"></span>
+
+<!-- SAVED -->
+<div id="s-saved" class="screen" style="flex-direction:column;">
+  <div class="sticky">
+    <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:3px">
+      <h2 class="hd" style="font-size:1.85rem">Saved</h2>
+      <span id="svcount" style="font-size:.68rem;color:var(--sub);font-weight:700"></span>
     </div>
-    <p style="color:var(--muted);font-size:.8rem;margin-bottom:14px">Your permanent civic reference library.</p>
-    <div style="display:flex;background:rgba(255,255,255,.04);border-radius:14px;padding:3px;margin-bottom:14px">
-      <button class="tab-btn active" id="sv-tab-l" onclick="setSavedTab('leaders')" style="border-bottom:none;border-radius:11px">Leaders</button>
-      <button class="tab-btn" id="sv-tab-a" onclick="setSavedTab('actions')" style="border-bottom:none;border-radius:11px">Votes</button>
+    <p style="color:var(--sub);font-size:.76rem;margin-bottom:12px">Your permanent civic reference library.</p>
+    <div style="display:flex;background:var(--s2);border-radius:12px;padding:3px;margin-bottom:12px">
+      <button class="tab on" id="svtl" onclick="svTab('l')" style="border-bottom:none;border-radius:9px;font-size:.75rem">🏛 Leaders</button>
+      <button class="tab" id="svta" onclick="svTab('a')" style="border-bottom:none;border-radius:9px;font-size:.75rem">⚡ Votes</button>
     </div>
   </div>
-  <div class="scroll-content pad" id="saved-list"></div>
+  <div class="scroll pad" id="svlist"></div>
 </div>
-<nav id="bottom-nav">
-  <button class="nav-btn active" id="nav-feed" onclick="navTo('feed')"><span style="font-size:1.3rem">&#x1F3E0;</span>Feed</button>
-  <button class="nav-btn" id="nav-saved" onclick="navTo('saved')"><span style="font-size:1.3rem">&#x1F516;</span>Saved<span class="nav-badge" id="nav-badge">0</span></button>
+
+<!-- NAV -->
+<nav id="nav">
+  <button class="nb on" id="nb-feed" onclick="navTo('feed')"><span style="font-size:1.25rem">🏠</span>Feed</button>
+  <button class="nb" id="nb-saved" onclick="navTo('saved')"><span style="font-size:1.25rem">🔖</span>Saved<span class="nbadge" id="nbadge">0</span></button>
 </nav>
 </div>
+
 <script>
-const COUNTIES={'Alabama':['Jefferson','Madison','Mobile','Montgomery','Shelby','Baldwin','Tuscaloosa','Lee','Morgan','Limestone'],'Alaska':['Anchorage','Fairbanks North Star','Matanuska-Susitna','Kenai Peninsula','Juneau','Ketchikan Gateway','Bethel','Kodiak Island'],'Arizona':['Maricopa','Pima','Pinal','Yavapai','Mohave','Yuma','Coconino','Cochise','Navajo','Apache'],'Arkansas':['Pulaski','Benton','Washington','Sebastian','Faulkner','Saline','Garland','Craighead','Lonoke','White'],'California':['Los Angeles','San Diego','Orange','Riverside','San Bernardino','Sacramento','Alameda','Santa Clara','Contra Costa','Fresno'],'Colorado':['El Paso','Denver','Jefferson','Arapahoe','Adams','Larimer','Weld','Boulder','Douglas','Pueblo'],'Connecticut':['Fairfield','Hartford','New Haven','Middlesex','Tolland','Windham','Litchfield','New London'],'Delaware':['New Castle','Kent','Sussex'],'Florida':['Miami-Dade','Broward','Palm Beach','Hillsborough','Orange','Pinellas','Duval','Lee','Polk','Brevard'],'Georgia':['Fulton','Gwinnett','Cobb','DeKalb','Chatham','Cherokee','Forsyth','Clayton','Richmond','Henry'],'Hawaii':['Honolulu','Hawaii','Maui','Kauai'],'Idaho':['Ada','Canyon','Kootenai','Twin Falls','Bannock','Bonner','Nez Perce','Bonneville'],'Illinois':['Cook','DuPage','Lake','Will','Kane','McHenry','Winnebago','Champaign','Sangamon','Peoria'],'Indiana':['Marion','Lake','Allen','Hamilton','Tippecanoe','St. Joseph','Elkhart','Johnson','Vanderburgh','Hendricks'],'Iowa':['Polk','Linn','Scott','Johnson','Black Hawk','Woodbury','Dubuque','Story','Dallas','Pottawattamie'],'Kansas':['Johnson','Sedgwick','Shawnee','Douglas','Wyandotte','Butler','Riley','Harvey','Ellis','Saline'],'Kentucky':['Jefferson','Fayette','Kenton','Boone','Warren','Campbell','Hardin','Daviess','McCracken','Madison'],'Louisiana':['Jefferson','Orleans','Caddo','Calcasieu','Bossier','St. Tammany','Lafayette','Rapides','Ouachita','Terrebonne'],'Maine':['Cumberland','York','Penobscot','Kennebec','Androscoggin','Knox','Sagadahoc','Oxford','Somerset','Waldo'],'Maryland':['Montgomery','Prince Georges','Baltimore County','Anne Arundel','Howard','Baltimore City','Frederick','Charles','Harford','Carroll'],'Massachusetts':['Middlesex','Worcester','Essex','Suffolk','Norfolk','Bristol','Plymouth','Hampden','Barnstable','Hampshire'],'Michigan':['Wayne','Oakland','Macomb','Kent','Genesee','Washtenaw','Ingham','Kalamazoo','Saginaw','Muskegon'],'Minnesota':['Hennepin','Ramsey','Dakota','Anoka','Washington','Scott','Sherburne','Stearns','Olmsted','Wright'],'Mississippi':['Hinds','Harrison','DeSoto','Jackson','Rankin','Forrest','Madison','Lee','Lamar','Lowndes'],'Missouri':['St. Louis County','Jackson','St. Charles','Jefferson','Greene','Clay','St. Louis City','Boone','Cass','Franklin'],'Montana':['Yellowstone','Cascade','Missoula','Flathead','Gallatin','Lewis and Clark','Ravalli','Lake','Butte-Silver Bow','Richland'],'Nebraska':['Douglas','Lancaster','Sarpy','Hall','Buffalo','Dodge','Gage','Madison','Platte','Lincoln'],'Nevada':['Clark','Washoe','Carson City','Elko','Lyon','Churchill','Humboldt','Nye','Douglas','White Pine'],'New Hampshire':['Hillsborough','Rockingham','Merrimack','Cheshire','Grafton','Belknap','Strafford','Carroll','Sullivan','Coos'],'New Jersey':['Bergen','Middlesex','Essex','Hudson','Monmouth','Ocean','Union','Camden','Passaic','Morris'],'New Mexico':['Bernalillo','Dona Ana','Santa Fe','Sandoval','San Juan','Valencia','Lea','Chaves','McKinley','Curry'],'New York':['New York (Manhattan)','Kings (Brooklyn)','Queens','Bronx','Richmond (Staten Island)','Nassau','Suffolk','Westchester','Erie','Monroe'],'North Carolina':['Mecklenburg','Wake','Guilford','Forsyth','Cumberland','Durham','Buncombe','Union','Cabarrus','Onslow'],'North Dakota':['Cass','Burleigh','Grand Forks','Ward','Morton','Stark','Pennington','McKenzie','Williams','Ramsey'],'Ohio':['Franklin','Cuyahoga','Hamilton','Summit','Montgomery','Lucas','Stark','Butler','Lorain','Lake'],'Oklahoma':['Oklahoma','Tulsa','Cleveland','Canadian','Comanche','Rogers','Payne','Wagoner','Creek','Logan'],'Oregon':['Multnomah','Washington','Clackamas','Marion','Lane','Jackson','Linn','Douglas','Yamhill','Polk'],'Pennsylvania':['Philadelphia','Allegheny','Montgomery','Bucks','Delaware','Chester','Lancaster','York','Berks','Luzerne'],'Rhode Island':['Providence','Kent','Washington','Newport','Bristol'],'South Carolina':['Greenville','Richland','Charleston','Horry','Spartanburg','Lexington','York','Anderson','Beaufort','Dorchester'],'South Dakota':['Minnehaha','Pennington','Lincoln','Brown','Codington','Brookings','Meade','Lawrence','McCook','Yankton'],'Tennessee':['Shelby','Davidson','Knox','Hamilton','Rutherford','Williamson','Sullivan','Sumner','Montgomery','Blount'],'Texas':['Harris','Dallas','Tarrant','Bexar','Travis','Collin','Hidalgo','El Paso','Denton','Fort Bend'],'Utah':['Salt Lake','Utah','Davis','Weber','Washington','Cache','Iron','Summit','Box Elder','Tooele'],'Vermont':['Chittenden','Rutland','Washington','Windsor','Franklin','Addison','Windham','Orleans','Caledonia','Orange'],'Virginia':['Fairfax','Prince William','Loudoun','Chesterfield','Arlington','Henrico','Alexandria City','Virginia Beach City','Norfolk City','Chesapeake City'],'Washington':['King','Pierce','Snohomish','Spokane','Clark','Thurston','Kitsap','Whatcom','Benton','Yakima'],'West Virginia':['Kanawha','Berkeley','Cabell','Wood','Raleigh','Monongalia','Putnam','Mercer','Harrison','Marion'],'Wisconsin':['Milwaukee','Dane','Waukesha','Brown','Racine','Outagamie','Winnebago','Kenosha','Rock','Marathon'],'Wyoming':['Laramie','Natrona','Campbell','Sweetwater','Albany','Fremont','Uinta','Sheridan','Lincoln','Teton']};
-const ALL_STATES=Object.keys(COUNTIES).sort();
-function getCounties(s){return COUNTIES[s]||['County 1','County 2','County 3'];}
-const PC={D:'#2563eb',R:'#dc2626',I:'#d97706'};
-let S={screen:'onboard',locStep:'state',selState:null,selCounty:null,leaders:[],filter:'All',detailLeader:null,savedLeaders:[],savedActions:[],savedTab:'leaders',navTab:'feed'};
-function loadStorage(){try{S.savedLeaders=JSON.parse(localStorage.getItem('cp_sl')||'[]');}catch{}try{S.savedActions=JSON.parse(localStorage.getItem('cp_sa')||'[]');}catch{}}
-function saveStorage(){try{localStorage.setItem('cp_sl',JSON.stringify(S.savedLeaders));}catch{}try{localStorage.setItem('cp_sa',JSON.stringify(S.savedActions));}catch{}}
-function benefitRating(l){if(!l.voteRecord||!l.voteRecord.length)return null;return Math.round((l.voteRecord.filter(v=>v.p).length/l.voteRecord.length)*100);}
-function rColor(r){return r>=70?'#3ddc84':r>=45?'#f0c040':'#ff5c5c';}
-function rLabel(r){return r>=70?'Serving the People':r>=45?'Mixed Record':'Failing the People';}
-function rEmoji(r){return r>=70?'\u2705':r>=45?'\u26a0\ufe0f':'\u274c';}
-function nowStr(){return new Date().toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'});}
-function isSaved(id){return S.savedLeaders.some(s=>s.id===id);}
-function isASaved(k){return S.savedActions.some(s=>s.key===k);}
-function totalSaved(){return S.savedLeaders.length+S.savedActions.length;}
-async function fetchAllLeaders(state,county){
-  const prompt='You are a nonpartisan civic data assistant. Generate accurate data for ALL current elected officials representing '+county+' County, '+state+'. Return ONLY a valid JSON array, no markdown. Include ALL 8 officials: 2 U.S. Senators for '+state+', 1 U.S. Representative for '+county+' area, Governor of '+state+', Lieutenant Governor of '+state+', 1 State Senator for '+county+' area, 2 State Representatives for '+county+' area. Each object: {"id":"unique","name":"Full Name with title","short":"LastName","role":"U.S. Senator OR U.S. Representative OR Governor OR Lieutenant Governor OR State Senator OR State Representative","level":"federal OR state","county":"'+county+'","state":"'+state+'","chamber":"U.S. Senate OR U.S. House OR Executive OR State Senate OR State House","party":"D OR R OR I","partyFull":"Democrat OR Republican OR Independent","initials":"XX","color":"#2563eb for Democrat OR #dc2626 for Republican OR #d97706 for Independent","isIncumbent":true,"helped":3,"harmed":2,"voteRecord":[{"b":"Specific bill or action description","p":true},{"b":"Bill description","p":false},{"b":"Bill","p":true},{"b":"Bill","p":true},{"b":"Bill","p":false},{"b":"Bill","p":true},{"b":"Bill","p":true},{"b":"Bill","p":false},{"b":"Bill","p":true},{"b":"Bill","p":true}],"actions":[{"id":1,"icon":"\u2705","impact":"helped","area":"Healthcare","text":"Specific action with numbers impacting '+state+' or '+county+' County residents.","date":"Mar 2026"},{"id":2,"icon":"\u274c","impact":"harmed","area":"Economy","text":"Specific action that harmed constituents.","date":"Feb 2026"},{"id":3,"icon":"\u2705","impact":"helped","area":"Education","text":"Specific action.","date":"Jan 2026"},{"id":4,"icon":"\u2705","impact":"helped","area":"Infrastructure","text":"Specific action.","date":"Dec 2025"},{"id":5,"icon":"\u274c","impact":"harmed","area":"Environment","text":"Specific action.","date":"Nov 2025"}],"stats":[{"l":"Term","v":"2023-2027"},{"l":"Bills Sponsored","v":"14"},{"l":"Approval Rating","v":"58%"},{"l":"Top Donor","v":"Labor: $180K"},{"l":"Town Halls","v":"8"}],"bio":"One sentence bio.","dataSource":"ai-research"}. RULES: Use REAL current officeholders (Gretchen Whitmer is Michigan Governor, Gary Peters and Elissa Slotkin are Michigan Senators). helped+harmed=5. voteRecord has exactly 10 items. Return only JSON array.';
-  const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})});
-  if(!res.ok)throw new Error('AI error '+res.status);
-  const data=await res.json();
-  const text=data.content?.find(b=>b.type==='text')?.text||'';
-  const parsed=JSON.parse(text.replace(/```json|```/g,'').trim());
-  return parsed.map(l=>({...l,voteRecord:(l.voteRecord||[]).map(v=>typeof v==='object'&&'p' in v?v:{b:String(v),p:true})}));
+// ─── COUNTIES ALL 50 STATES ───────────────────────────────────────────────────
+const CY={'Alabama':['Jefferson','Madison','Mobile','Montgomery','Shelby','Baldwin','Tuscaloosa','Lee','Morgan','Limestone'],'Alaska':['Anchorage','Fairbanks North Star','Matanuska-Susitna','Kenai Peninsula','Juneau','Ketchikan Gateway','Bethel','Kodiak Island'],'Arizona':['Maricopa','Pima','Pinal','Yavapai','Mohave','Yuma','Coconino','Cochise','Navajo','Apache'],'Arkansas':['Pulaski','Benton','Washington','Sebastian','Faulkner','Saline','Garland','Craighead','Lonoke','White'],'California':['Los Angeles','San Diego','Orange','Riverside','San Bernardino','Sacramento','Alameda','Santa Clara','Contra Costa','Fresno'],'Colorado':['El Paso','Denver','Jefferson','Arapahoe','Adams','Larimer','Weld','Boulder','Douglas','Pueblo'],'Connecticut':['Fairfield','Hartford','New Haven','Middlesex','Tolland','Windham','Litchfield','New London'],'Delaware':['New Castle','Kent','Sussex'],'Florida':['Miami-Dade','Broward','Palm Beach','Hillsborough','Orange','Pinellas','Duval','Lee','Polk','Brevard'],'Georgia':['Fulton','Gwinnett','Cobb','DeKalb','Chatham','Cherokee','Forsyth','Clayton','Richmond','Henry'],'Hawaii':['Honolulu','Hawaii County','Maui','Kauai'],'Idaho':['Ada','Canyon','Kootenai','Twin Falls','Bannock','Bonner','Nez Perce','Bonneville'],'Illinois':['Cook','DuPage','Lake','Will','Kane','McHenry','Winnebago','Champaign','Sangamon','Peoria'],'Indiana':['Marion','Lake','Allen','Hamilton','Tippecanoe','St Joseph','Elkhart','Johnson','Vanderburgh','Hendricks'],'Iowa':['Polk','Linn','Scott','Johnson','Black Hawk','Woodbury','Dubuque','Story','Dallas','Pottawattamie'],'Kansas':['Johnson','Sedgwick','Shawnee','Douglas','Wyandotte','Butler','Riley','Harvey','Ellis','Saline'],'Kentucky':['Jefferson','Fayette','Kenton','Boone','Warren','Campbell','Hardin','Daviess','McCracken','Madison'],'Louisiana':['Jefferson','Orleans','Caddo','Calcasieu','Bossier','St Tammany','Lafayette','Rapides','Ouachita','Terrebonne'],'Maine':['Cumberland','York','Penobscot','Kennebec','Androscoggin','Knox','Oxford','Somerset'],'Maryland':['Montgomery','Prince Georges','Baltimore County','Anne Arundel','Howard','Baltimore City','Frederick','Charles','Harford','Carroll'],'Massachusetts':['Middlesex','Worcester','Essex','Suffolk','Norfolk','Bristol','Plymouth','Hampden','Barnstable','Hampshire'],'Michigan':['Wayne','Oakland','Macomb','Kent','Genesee','Washtenaw','Ingham','Kalamazoo','Saginaw','Muskegon'],'Minnesota':['Hennepin','Ramsey','Dakota','Anoka','Washington','Scott','Sherburne','Stearns','Olmsted','Wright'],'Mississippi':['Hinds','Harrison','DeSoto','Jackson','Rankin','Forrest','Madison','Lee','Lamar','Lowndes'],'Missouri':['St Louis County','Jackson','St Charles','Jefferson','Greene','Clay','St Louis City','Boone','Cass','Franklin'],'Montana':['Yellowstone','Cascade','Missoula','Flathead','Gallatin','Lewis and Clark','Ravalli','Lake'],'Nebraska':['Douglas','Lancaster','Sarpy','Hall','Buffalo','Dodge','Gage','Madison'],'Nevada':['Clark','Washoe','Carson City','Elko','Lyon','Churchill','Nye','Douglas'],'New Hampshire':['Hillsborough','Rockingham','Merrimack','Cheshire','Grafton','Belknap','Strafford','Carroll'],'New Jersey':['Bergen','Middlesex','Essex','Hudson','Monmouth','Ocean','Union','Camden','Passaic','Morris'],'New Mexico':['Bernalillo','Dona Ana','Santa Fe','Sandoval','San Juan','Valencia','Lea','Chaves'],'New York':['New York (Manhattan)','Kings (Brooklyn)','Queens','Bronx','Richmond (Staten Island)','Nassau','Suffolk','Westchester','Erie','Monroe'],'North Carolina':['Mecklenburg','Wake','Guilford','Forsyth','Cumberland','Durham','Buncombe','Union','Cabarrus','Onslow'],'North Dakota':['Cass','Burleigh','Grand Forks','Ward','Morton','Stark','Williams','Pennington'],'Ohio':['Franklin','Cuyahoga','Hamilton','Summit','Montgomery','Lucas','Stark','Butler','Lorain','Lake'],'Oklahoma':['Oklahoma','Tulsa','Cleveland','Canadian','Comanche','Rogers','Payne','Wagoner'],'Oregon':['Multnomah','Washington','Clackamas','Marion','Lane','Jackson','Linn','Douglas'],'Pennsylvania':['Philadelphia','Allegheny','Montgomery','Bucks','Delaware','Chester','Lancaster','York','Berks','Luzerne'],'Rhode Island':['Providence','Kent','Washington','Newport','Bristol'],'South Carolina':['Greenville','Richland','Charleston','Horry','Spartanburg','Lexington','York','Anderson'],'South Dakota':['Minnehaha','Pennington','Lincoln','Brown','Codington','Brookings','Meade','Lawrence'],'Tennessee':['Shelby','Davidson','Knox','Hamilton','Rutherford','Williamson','Sullivan','Sumner','Montgomery','Blount'],'Texas':['Harris','Dallas','Tarrant','Bexar','Travis','Collin','Hidalgo','El Paso','Denton','Fort Bend'],'Utah':['Salt Lake','Utah','Davis','Weber','Washington','Cache','Iron','Summit'],'Vermont':['Chittenden','Rutland','Washington','Windsor','Franklin','Addison','Windham','Orleans'],'Virginia':['Fairfax','Prince William','Loudoun','Chesterfield','Arlington','Henrico','Alexandria City','Virginia Beach City','Norfolk City','Chesapeake City'],'Washington':['King','Pierce','Snohomish','Spokane','Clark','Thurston','Kitsap','Whatcom','Benton','Yakima'],'West Virginia':['Kanawha','Berkeley','Cabell','Wood','Raleigh','Monongalia','Putnam','Mercer'],'Wisconsin':['Milwaukee','Dane','Waukesha','Brown','Racine','Outagamie','Winnebago','Kenosha','Rock','Marathon'],'Wyoming':['Laramie','Natrona','Campbell','Sweetwater','Albany','Fremont','Uinta','Sheridan']};
+const STATES=Object.keys(CY).sort();
+const PC={D:'#3b6cf5',R:'#e0423a',I:'#d4850a'};
+
+// ─── APP STATE ─────────────────────────────────────────────────────────────────
+const A={screen:'onboard',state:null,county:null,step:'state',leaders:[],filter:'All',savedL:[],savedA:[],svTab:'l',navTab:'feed'};
+function lsLoad(){try{A.savedL=JSON.parse(localStorage.getItem('cp_l')||'[]');}catch{}try{A.savedA=JSON.parse(localStorage.getItem('cp_a')||'[]');}catch{}}
+function lsSave(){try{localStorage.setItem('cp_l',JSON.stringify(A.savedL));}catch{}try{localStorage.setItem('cp_a',JSON.stringify(A.savedA));}catch{}}
+
+// ─── HELPERS ──────────────────────────────────────────────────────────────────
+function rtng(l){if(!l.votes||!l.votes.length)return null;return Math.round(l.votes.filter(v=>v.p).length/l.votes.length*100);}
+function rc(r){return r>=70?'var(--green)':r>=45?'var(--gold)':'var(--red)';}
+function rl(r){return r>=70?'Serving the People':r>=45?'Mixed Record':'Failing the People';}
+function re(r){return r>=70?'✅':r>=45?'⚠️':'❌';}
+function ts(){return new Date().toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'});}
+function isSL(id){return A.savedL.some(x=>x.id===id);}
+function isSA(k){return A.savedA.some(x=>x.key===k);}
+
+// ─── CLAUDE AI ────────────────────────────────────────────────────────────────
+async function claudeCall(prompt){
+  const r=await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      model:'claude-sonnet-4-20250514',
+      max_tokens:3000,
+      messages:[{role:'user',content:prompt}]
+    })
+  });
+  if(!r.ok){const t=await r.text();throw new Error(`API ${r.status}: ${t.slice(0,100)}`);}
+  const d=await r.json();
+  if(d.error)throw new Error(d.error.message||'API error');
+  const raw=d.content?.find(b=>b.type==='text')?.text||'';
+  // Robustly extract JSON array
+  const s=raw.indexOf('['),e=raw.lastIndexOf(']');
+  if(s===-1||e===-1)throw new Error('No JSON array in response');
+  const chunk=raw.slice(s,e+1);
+  try{return JSON.parse(chunk);}
+  catch{
+    // Salvage complete objects from truncated JSON
+    const out=[];let depth=0,inS=false,esc=false,os=-1;
+    for(let i=0;i<chunk.length;i++){
+      const c=chunk[i];
+      if(esc){esc=false;continue;}
+      if(c==='\\'&&inS){esc=true;continue;}
+      if(c==='"'){inS=!inS;continue;}
+      if(inS)continue;
+      if(c==='{'){if(depth===0)os=i;depth++;}
+      else if(c==='}'){depth--;if(depth===0&&os!==-1){try{out.push(JSON.parse(chunk.slice(os,i+1)));}catch{}os=-1;}}
+    }
+    if(!out.length)throw new Error('JSON parse failed — please try again');
+    return out;
+  }
 }
-function showScreen(name){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById('screen-'+name).classList.add('active');S.screen=name;document.getElementById('bottom-nav').classList.toggle('visible',['feed','saved'].includes(name)&&!!S.selCounty);if(name==='location')initLocation();updateBadge();}
-function navTo(tab){S.navTab=tab;document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));document.getElementById('nav-'+tab).classList.add('active');if(tab==='saved')renderSaved();showScreen(tab);}
-function initLocation(){S.locStep='state';document.getElementById('loc-title').textContent='Pick Your State';document.getElementById('loc-sub').textContent="We'll load all your representatives — federal and state.";document.getElementById('back-btn').style.display='none';document.getElementById('loc-search').value='';document.getElementById('loc-btn').disabled=true;document.getElementById('loc-btn').textContent='Select a state to continue';updateSteps();renderGrid(ALL_STATES,'state');}
-function backToState(){S.locStep='state';S.selState=null;S.selCounty=null;document.getElementById('loc-title').textContent='Pick Your State';document.getElementById('loc-sub').textContent="We'll load all your representatives.";document.getElementById('back-btn').style.display='none';document.getElementById('loc-search').value='';document.getElementById('s1v').textContent='Choose one';document.getElementById('s2v').textContent='Choose one';document.getElementById('loc-btn').disabled=true;document.getElementById('loc-btn').textContent='Select a state to continue';updateSteps();renderGrid(ALL_STATES,'state');}
-function filterList(){const q=document.getElementById('loc-search').value.toLowerCase();if(S.locStep==='state')renderGrid(ALL_STATES.filter(s=>s.toLowerCase().includes(q)),'state');else renderGrid(getCounties(S.selState).filter(c=>c.toLowerCase().includes(q)),'county');}
-function renderGrid(items,type){document.getElementById('loc-grid').innerHTML=items.map(item=>{const sel=type==='state'?S.selState===item:S.selCounty===item;return '<button onclick="selectLoc(\''+item.replace(/'/g,"\\'")+'\'\,\''+type+'\')" style="padding:12px 14px;border-radius:12px;text-align:left;cursor:pointer;font-family:\'Syne\',sans-serif;font-size:.83rem;font-weight:'+(sel?800:500)+';transition:all .15s;border:1px solid '+(sel?'var(--accent)':'var(--border)')+';background:'+(sel?'rgba(240,192,64,.12)':'var(--card)')+';color:'+(sel?'var(--accent)':'var(--sub)')+'">'+item+'</button>';}).join('');}
-function selectLoc(item,type){if(type==='state'){S.selState=item;S.selCounty=null;S.locStep='county';document.getElementById('loc-title').textContent='Pick Your County';document.getElementById('loc-sub').textContent='Showing counties in '+item+'. Pick yours.';document.getElementById('back-btn').style.display='block';document.getElementById('loc-search').value='';document.getElementById('s1v').textContent=item;document.getElementById('s2v').textContent='Choose one';document.getElementById('loc-btn').disabled=true;document.getElementById('loc-btn').textContent='Select your county to continue';updateSteps();renderGrid(getCounties(item),'county');}else{S.selCounty=item;document.getElementById('s2v').textContent=item;document.getElementById('loc-btn').disabled=false;document.getElementById('loc-btn').textContent='Load '+item+' Leaders';renderGrid(getCounties(S.selState),'county');updateSteps();}}
-function updateSteps(){document.getElementById('step-1').className='step'+(S.locStep==='state'?' active':S.selState?' done':'');document.getElementById('step-2').className='step'+(S.locStep==='county'?' active':S.selCounty?' done':'');document.getElementById('sn1').textContent=S.selState&&S.locStep==='county'?'\u2713':'1';document.getElementById('sn2').textContent=S.selCounty?'\u2713':'2';}
-async function confirmLocation(){if(!S.selCounty)return;document.getElementById('loc-pill').textContent='\uD83D\uDCCD '+S.selCounty+', '+S.selState+' \u25BE';S.filter='All';navTo('feed');document.getElementById('feed-list').innerHTML='<div class="loading-card"><div class="spinner"></div><p style="color:var(--muted);margin-top:16px;font-size:.88rem;line-height:1.8">Loading all leaders for<br/><strong style="color:var(--accent)">'+S.selCounty+' County, '+S.selState+'</strong><br/><br/>\uD83C\uDDFA\uD83C\uDDF8 U.S. Senators + Representatives<br/>\uD83C\uDFE2 Governor + Lt. Governor<br/>\uD83C\uDFDB State Senators + Representatives<br/><br/><span style="color:var(--dim);font-size:.78rem">This takes about 10-15 seconds...</span></p></div>';try{const leaders=await fetchAllLeaders(S.selState,S.selCounty);S.leaders=leaders;renderFeed();}catch(err){document.getElementById('feed-list').innerHTML='<div style="background:rgba(255,92,92,.08);border:1px solid rgba(255,92,92,.2);border-radius:14px;padding:20px;font-size:.84rem;color:#ff8c8c;line-height:1.7;margin-bottom:12px">\u26a0\ufe0f <strong>Could not load leaders.</strong><br/><br/>Check your internet and try again.<br/><span style="font-size:.75rem;color:var(--muted)">Error: '+err.message+'</span></div><button class="btn-primary" onclick="retryLoad()" style="margin-top:4px">\uD83D\uDD04 Try Again</button>';}}
-async function retryLoad(){await confirmLocation();}
-const FILTERS=['All','\uD83C\uDDFA\uD83C\uDDF8 Federal','\uD83C\uDFDB State','U.S. Senate','U.S. House','Governor','State Senate','State House','\u2705 Top Rated','\u274c Low Rated'];
-function renderFeed(){const fed=S.leaders.filter(l=>l.level==='federal').length,sta=S.leaders.filter(l=>l.level==='state').length;document.getElementById('feed-sub').textContent='\uD83C\uDDFA\uD83C\uDDF8 '+fed+' federal \u00B7 \uD83C\uDFDB '+sta+' state officials';document.getElementById('feed-chips').innerHTML=FILTERS.map(f=>'<button class="chip'+(S.filter===f?' active':'')+'" onclick="setFilter(\''+f.replace(/'/g,"\'")+'\')">'+f+'</button>').join('');const filtered=filterLeaders(S.leaders);const list=document.getElementById('feed-list');if(!filtered.length){list.innerHTML='<div style="text-align:center;padding:60px 20px;color:var(--dim)"><div style="font-size:2.5rem;margin-bottom:12px">\uD83D\uDD0D</div><p>No leaders match this filter.</p></div>';return;}list.innerHTML=filtered.map((l,i)=>cardHTML(l,i)).join('');}
-function filterLeaders(ls){const f=S.filter;if(f.includes('Federal'))return ls.filter(l=>l.level==='federal');if(f.includes('State')&&!f.includes('Senate')&&!f.includes('House'))return ls.filter(l=>l.level==='state');if(f==='U.S. Senate')return ls.filter(l=>l.chamber==='U.S. Senate');if(f==='U.S. House')return ls.filter(l=>l.chamber==='U.S. House');if(f==='Governor')return ls.filter(l=>l.role==='Governor'||l.role==='Lieutenant Governor');if(f==='State Senate')return ls.filter(l=>l.chamber==='State Senate');if(f==='State House')return ls.filter(l=>l.chamber==='State House');if(f.includes('Top'))return ls.filter(l=>{const r=benefitRating(l);return r!==null&&r>=70;});if(f.includes('Low'))return ls.filter(l=>{const r=benefitRating(l);return r!==null&&r<50;});return ls;}
-function setFilter(f){S.filter=f;renderFeed();}
-function meterHTML(l,compact){const r=benefitRating(l),total=l.voteRecord?.length||0;if(r===null)return '<div style="background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:12px;padding:10px 14px;margin-top:10px"><div class="label" style="margin-bottom:4px">\uD83D\uDCCA People\'s Benefit Rating</div><div style="font-size:.75rem;color:var(--dim)">No vote data</div></div>';const c=rColor(r),ben=l.voteRecord.filter(v=>v.p).length;return '<div style="background:'+(r>=70?'rgba(61,220,132,.05)':r>=45?'rgba(240,192,64,.05)':'rgba(255,92,92,.05)')+';border:1px solid '+c+'30;border-radius:14px;padding:'+(compact?'10px 14px':'16px')+';margin-top:'+(compact?8:12)+'px"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><div><div class="label" style="margin-bottom:2px">\uD83D\uDCCA People\'s Benefit Rating</div><div style="font-size:.7rem;color:var(--muted)">'+total+' votes tracked</div></div><div style="text-align:center"><div class="display" style="font-size:'+(compact?'2rem':'2.6rem')+';color:'+c+'">'+r+'%</div><div style="font-size:.6rem;color:'+c+';font-weight:700;text-transform:uppercase;letter-spacing:.8px">'+rEmoji(r)+' '+rLabel(r)+'</div></div></div><div style="height:9px;background:rgba(255,255,255,.06);border-radius:20px;overflow:hidden;margin-bottom:8px"><div style="height:100%;width:'+r+'%;background:linear-gradient(90deg,'+c+'bb,'+c+');border-radius:20px"></div></div><div style="display:flex;gap:14px;font-size:.72rem"><span style="color:var(--sub)"><strong style="color:var(--green)">'+ben+'</strong> benefited</span><span style="color:var(--sub)"><strong style="color:var(--red)">'+(total-ben)+'</strong> did not</span></div></div>';}
-function cardHTML(l,i){const sv=isSaved(l.id),pc=PC[l.party]||'#6b7280',delay=['','d1','d2','d3','d4'][Math.min(i,4)],isFed=l.level==='federal',isGov=l.role==='Governor'||l.role==='Lieutenant Governor',lvlColor=isFed?'var(--accent)':'#5b9cf6',lvlBg=isFed?'rgba(240,192,64,.07)':'rgba(91,156,246,.08)',lvlBorder=isFed?'rgba(240,192,64,.14)':'rgba(91,156,246,.15)',lvlIcon=isGov?'\uD83C\uDFE2':isFed?'\uD83C\uDDFA\uD83C\uDDF8':'\uD83C\uDFDB';return '<div class="card fu '+delay+'"><div class="stripe" style="background:linear-gradient(90deg,'+l.color+','+l.color+'33)"></div><div style="padding:6px 16px;display:flex;align-items:center;justify-content:space-between;background:'+lvlBg+';border-bottom:1px solid '+lvlBorder+'"><span style="font-size:.68rem;font-weight:800;color:'+lvlColor+'">'+lvlIcon+' '+(l.role||'').toUpperCase()+'</span><span style="font-size:.62rem;font-weight:800;color:'+(isFed?'var(--green)':'#5b9cf6')+';background:'+(isFed?'rgba(61,220,132,.1)':'rgba(91,156,246,.1)')+';border:1px solid '+(isFed?'rgba(61,220,132,.25)':'rgba(91,156,246,.25)')+';border-radius:20px;padding:2px 8px">'+(isFed?'Federal':'State')+'</span></div><div style="padding:14px 16px"><div style="display:flex;align-items:center;gap:12px;margin-bottom:12px"><div class="avatar" onclick="openDetail(\''+l.id+'\')" style="width:46px;height:46px;background:'+l.color+'22;border:2px solid '+l.color+'55;color:'+l.color+';font-size:13px;cursor:pointer">'+l.initials+'</div><div style="flex:1;min-width:0;cursor:pointer" onclick="openDetail(\''+l.id+'\')" ><div style="font-weight:800;font-size:.95rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+l.name+'</div><div style="font-size:.72rem;color:var(--muted);margin-top:2px">'+l.role+' \u00B7 '+l.state+'</div></div><span class="pill" style="background:'+pc+'22;color:'+pc+';border:1px solid '+pc+'44">'+l.partyFull+'</span><button onclick="toggleLeader(\''+l.id+'\')" id="bl-'+l.id+'" style="width:32px;height:32px;border-radius:50%;border:1px solid '+(sv?'rgba(240,192,64,.5)':'rgba(255,255,255,.1)')+';background:'+(sv?'rgba(240,192,64,.15)':'rgba(255,255,255,.04)')+';display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px;cursor:pointer">'+(sv?'\uD83D\uDD16':'\uD83C\uDFF7')+'</button></div>'+meterHTML(l,true)+'<div style="margin-top:10px;padding:10px 12px;background:rgba(255,255,255,.03);border-radius:10px;cursor:pointer" onclick="openDetail(\''+l.id+'\')" ><div style="font-size:.67rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">\u26a1 Most Recent Action</div><div style="font-size:.79rem;line-height:1.5;color:var(--sub)">'+(l.actions[0]?.icon||'\uD83D\uDCCB')+' '+(l.actions[0]?.text||'No data')+'</div>'+(l.actions[0]?.date?'<div style="font-size:.64rem;color:var(--dim);margin-top:4px">\uD83D\uDDD3 '+l.actions[0].date+'</div>':'')+'</div><div style="margin-top:10px;border-top:1px solid var(--border2);padding-top:10px"><div class="label" style="margin-bottom:8px">Save individual votes</div>'+(l.actions||[]).map(a=>{const aKey=l.id+'-'+a.id,aS=isASaved(aKey);return '<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border2)"><span style="font-size:.85rem;flex-shrink:0">'+a.icon+'</span><span style="flex:1;font-size:.72rem;color:var(--sub);line-height:1.4">'+a.text+'</span>'+(a.date?'<span style="font-size:.6rem;color:var(--dim);flex-shrink:0;white-space:nowrap">'+a.date+'</span>':'')+'<button onclick="toggleAction(\''+l.id+'\',\''+a.id+'\')" id="ba-'+l.id+'-'+a.id+'" style="width:26px;height:26px;border-radius:50%;border:1px solid '+(aS?'rgba(240,192,64,.5)':'rgba(255,255,255,.1)')+';background:'+(aS?'rgba(240,192,64,.15)':'rgba(255,255,255,.04)')+';display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:11px;cursor:pointer">'+(aS?'\uD83D\uDD16':'\uD83C\uDFF7')+'</button></div>';}).join('')+'</div><div style="text-align:right;margin-top:10px"><button class="btn-ghost" onclick="openDetail(\''+l.id+'\')" >Full record + '+(l.voteRecord?.length||0)+' votes \u2192</button></div></div></div>';}
-function openDetail(id){const l=S.leaders.find(x=>x.id===id)||S.savedLeaders.find(x=>x.id===id);if(!l)return;S.detailLeader=l;renderDetail(l);document.getElementById('bottom-nav').classList.remove('visible');showScreen('detail');}
-function renderDetail(l){const r=benefitRating(l),sv=isSaved(l.id),pc=PC[l.party]||'#6b7280',isFed=l.level==='federal';document.getElementById('detail-hero').innerHTML='<div style="background:linear-gradient(160deg,'+l.color+'18,var(--bg) 55%);padding:52px 20px 24px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px"><button onclick="closeDetail()" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.09);border-radius:10px;padding:6px 14px;color:var(--sub);font-size:.8rem;cursor:pointer;font-family:\'Syne\',sans-serif">\u2190 Back</button><button onclick="toggleLeader(\''+l.id+'\')" id="db-'+l.id+'" style="width:36px;height:36px;border-radius:50%;border:1px solid '+(sv?'rgba(240,192,64,.5)':'rgba(255,255,255,.1)')+';background:'+(sv?'rgba(240,192,64,.15)':'rgba(255,255,255,.04)')+';display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer">'+(sv?'\uD83D\uDD16':'\uD83C\uDFF7')+'</button></div><div style="display:inline-block;font-size:.7rem;font-weight:800;padding:3px 12px;border-radius:20px;border:1px solid '+(isFed?'rgba(240,192,64,.3)':'rgba(91,156,246,.3)')+';color:'+(isFed?'var(--accent)':'#5b9cf6')+';background:'+(isFed?'rgba(240,192,64,.08)':'rgba(91,156,246,.08)')+';margin-bottom:14px">'+(isFed?'\uD83C\uDDFA\uD83C\uDDF8 Federal Government':'\uD83C\uDFDB State Government')+'</div><div style="display:flex;align-items:flex-start;gap:16px"><div class="avatar" style="width:64px;height:64px;background:'+l.color+'22;border:2px solid '+l.color+'55;color:'+l.color+';font-size:18px">'+l.initials+'</div><div style="flex:1"><h1 class="display" style="font-size:1.8rem">'+l.name+'</h1><p style="color:var(--muted);font-size:.78rem;margin-top:4px">'+l.role+' \u00B7 '+(l.county||'')+', '+l.state+'</p><div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap"><span class="pill" style="background:'+pc+'22;color:'+pc+';border:1px solid '+pc+'44">'+l.partyFull+'</span><span class="pill" style="background:rgba(255,255,255,.06);color:var(--muted);border:1px solid var(--border)">'+(l.chamber||'')+'</span></div></div></div><p style="font-size:.82rem;color:var(--muted);line-height:1.65;margin-top:14px">'+(l.bio||'')+'</p><div style="display:flex;gap:8px;margin-top:14px">'+[{label:'Rating',val:r!==null?r+'%':'\u2013',color:r!==null?rColor(r):'var(--muted)'},{label:'Votes',val:''+(l.voteRecord?.length||0),color:'var(--sub)'},{label:'Helped',val:''+(l.helped||0),color:'var(--green)'},{label:'Harmed',val:''+(l.harmed||0),color:'var(--red)'}].map(s=>'<div style="flex:1;background:rgba(255,255,255,.04);border-radius:12px;padding:10px 6px;text-align:center"><div class="display" style="font-size:1.4rem;color:'+s.color+'">'+s.val+'</div><div style="font-size:.6rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.8px">'+s.label+'</div></div>').join('')+'</div>'+meterHTML(l,false)+'</div>';document.getElementById('detail-tabs').innerHTML='<button class="tab-btn active" id="dt-votes" onclick="switchTab(\'votes\')">\u26a1 Actions</button><button class="tab-btn" id="dt-history" onclick="switchTab(\'history\')">\uD83D\uDDF3 All Votes</button><button class="tab-btn" id="dt-stats" onclick="switchTab(\'stats\')">\uD83D\uDCCA Stats</button>';document.getElementById('detail-panels').innerHTML='<div class="tab-panel active" id="dp-votes"><div class="label" style="margin-bottom:14px">5 Key Actions \u2014 '+l.role+'</div>'+(l.actions||[]).map((a,i)=>'<div style="display:flex;gap:12px;padding:14px;background:var(--card);border-radius:14px;margin-bottom:8px;border:1px solid var(--border2);animation:fadeUp .3s ease '+(i*.05)+'s both"><span style="font-size:1.1rem;flex-shrink:0">'+a.icon+'</span><div style="flex:1"><div style="font-size:.85rem;line-height:1.55;color:#e0e2e8">'+a.text+'</div><div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;align-items:center"><span class="pill" style="background:'+(a.impact==='helped'?'rgba(61,220,132,.12)':'rgba(255,92,92,.12)')+';color:'+(a.impact==='helped'?'var(--green)':'var(--red)')+';border:1px solid '+(a.impact==='helped'?'rgba(61,220,132,.3)':'rgba(255,92,92,.3)')+'">'+a.impact+'</span><span class="pill" style="background:rgba(255,255,255,.06);color:var(--muted);border:1px solid var(--border)">'+a.area+'</span>'+(a.date?'<span style="font-size:.64rem;color:var(--dim)">\uD83D\uDDD3 '+a.date+'</span>':'')+'</div></div></div>').join('')+'</div><div class="tab-panel" id="dp-history"><div class="label" style="margin-bottom:14px">Full Vote Record \u2014 '+(l.voteRecord?.length||0)+' bills & actions</div><div class="info-box" style="margin-bottom:14px"><div class="info-title">How We Calculate '+(r!==null?r+'%':'the Rating')+'</div><p style="font-size:.78rem;color:var(--muted);line-height:1.6">Every vote and action is tracked. Items that <strong style="color:var(--green)">benefited</strong> constituents count positively. Items that <strong style="color:var(--red)">did not</strong> count negatively. Rating = beneficial \u00F7 total \u00D7 100.</p></div>'+(l.voteRecord||[]).map(v=>'<div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--card);border-radius:12px;margin-bottom:6px;border:1px solid var(--border2)"><span style="font-size:1rem;flex-shrink:0">'+(v.p?'\u2705':'\u274c')+'</span><span style="flex:1;font-size:.81rem;color:#d1d5db">'+v.b+'</span><span class="pill" style="background:'+(v.p?'rgba(61,220,132,.1)':'rgba(255,92,92,.1)')+';color:'+(v.p?'var(--green)':'var(--red)')+';border:1px solid '+(v.p?'rgba(61,220,132,.25)':'rgba(255,92,92,.25)')+'}'+(v.p?'Benefited':'Did not')+'</span></div>').join('')+'</div><div class="tab-panel" id="dp-stats"><div class="label" style="margin-bottom:14px">Accountability Stats</div>'+(l.stats||[]).map(s=>'<div style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;background:var(--card);border-radius:14px;margin-bottom:8px;border:1px solid var(--border2)"><span style="font-size:.85rem;color:var(--sub)">'+s.l+'</span><span class="display" style="font-size:1.2rem;color:var(--accent)">'+s.v+'</span></div>').join('')+'<div class="info-box"><div class="info-title">\uD83D\uDCCC About This Data</div><p style="font-size:.78rem;color:var(--muted);line-height:1.6">Data researched from publicly available sources including official websites and voting records. Save any item to preserve it permanently in your library.</p></div></div>';document.getElementById('detail-scroll').scrollTop=0;}
-function switchTab(k){document.querySelectorAll('#detail-tabs .tab-btn').forEach(b=>b.classList.remove('active'));document.getElementById('dt-'+k).classList.add('active');document.querySelectorAll('#detail-panels .tab-panel').forEach(p=>p.classList.remove('active'));document.getElementById('dp-'+k)?.classList.add('active');}
-function closeDetail(){S.detailLeader=null;if(S.navTab==='saved'){renderSaved();showScreen('saved');}else{renderFeed();showScreen('feed');}document.getElementById('bottom-nav').classList.add('visible');}
-function toggleLeader(id){const l=S.leaders.find(x=>x.id===id)||S.savedLeaders.find(x=>x.id===id);if(!l)return;const exists=isSaved(id);if(exists)S.savedLeaders=S.savedLeaders.filter(s=>s.id!==id);else S.savedLeaders.unshift({...l,savedAt:nowStr()});saveStorage();updateBadge();const ns=!exists;['bl-'+id,'db-'+id].forEach(bid=>{const b=document.getElementById(bid);if(!b)return;b.style.border='1px solid '+(ns?'rgba(240,192,64,.5)':'rgba(255,255,255,.1)');b.style.background=ns?'rgba(240,192,64,.15)':'rgba(255,255,255,.04)';b.innerHTML=ns?'\uD83D\uDD16':'\uD83C\uDFF7';});if(S.screen==='saved')renderSaved();}
-function toggleAction(lid,aid){const key=lid+'-'+aid;const l=S.leaders.find(x=>x.id===lid)||S.savedLeaders.find(x=>x.id===lid);if(!l)return;const a=l.actions.find(x=>String(x.id)===String(aid));if(!a)return;const exists=isASaved(key);if(exists)S.savedActions=S.savedActions.filter(s=>s.key!==key);else S.savedActions.unshift({...a,key,leaderName:l.name,leaderState:l.state,leaderChamber:l.chamber,leaderParty:l.party,savedAt:nowStr()});saveStorage();updateBadge();const ns=!exists,btn=document.getElementById('ba-'+lid+'-'+aid);if(btn){btn.style.border='1px solid '+(ns?'rgba(240,192,64,.5)':'rgba(255,255,255,.1)');btn.style.background=ns?'rgba(240,192,64,.15)':'rgba(255,255,255,.04)';btn.innerHTML=ns?'\uD83D\uDD16':'\uD83C\uDFF7';}if(S.screen==='saved')renderSaved();}
-function updateBadge(){const t=totalSaved(),b=document.getElementById('nav-badge');b.textContent=t;b.classList.toggle('on',t>0);const sc=document.getElementById('saved-count');if(sc)sc.textContent=S.savedLeaders.length+' leaders \u00B7 '+S.savedActions.length+' votes';}
-function setSavedTab(tab){S.savedTab=tab;document.getElementById('sv-tab-l').classList.toggle('active',tab==='leaders');document.getElementById('sv-tab-a').classList.toggle('active',tab==='actions');renderSaved();}
-function renderSaved(){document.getElementById('saved-count').textContent=S.savedLeaders.length+' leaders \u00B7 '+S.savedActions.length+' votes';const list=document.getElementById('saved-list');if(S.savedTab==='leaders'){if(!S.savedLeaders.length){list.innerHTML=emptyState('leader');return;}list.innerHTML=S.savedLeaders.map(l=>{const r=benefitRating(l),pc=PC[l.party]||'#6b7280',isFed=l.level==='federal';return '<div class="card"><div class="saved-banner"><span>\uD83D\uDD16 SAVED \u00B7 '+(l.savedAt||'')+'</span><button class="rm-btn" onclick="rmLeader(\''+l.id+'\')">Remove \u2715</button></div><div class="stripe" style="background:linear-gradient(90deg,'+l.color+','+l.color+'33)"></div><div style="padding:14px 16px;cursor:pointer" onclick="openDetail(\''+l.id+'\')" ><div style="font-size:.65rem;font-weight:800;color:'+(isFed?'var(--accent)':'#5b9cf6')+';margin-bottom:8px">'+(isFed?'\uD83C\uDDFA\uD83C\uDDF8 FEDERAL':'\uD83C\uDFDB STATE')+' \u00B7 '+l.role+'</div><div style="display:flex;align-items:center;gap:12px;margin-bottom:10px"><div class="avatar" style="width:44px;height:44px;background:'+l.color+'22;border:2px solid '+l.color+'55;color:'+l.color+';font-size:12px">'+l.initials+'</div><div style="flex:1;min-width:0"><div style="font-weight:800;font-size:.92rem">'+l.name+'</div><div style="font-size:.72rem;color:var(--muted);margin-top:2px">'+(l.county||'')+', '+l.state+'</div></div><span class="pill" style="background:'+pc+'22;color:'+pc+';border:1px solid '+pc+'44">'+l.partyFull+'</span></div>'+(r!==null?'<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><span style="font-size:.7rem;color:var(--muted);flex-shrink:0">Rating:</span><div style="flex:1;height:6px;background:rgba(255,255,255,.06);border-radius:10px;overflow:hidden"><div style="height:100%;width:'+r+'%;background:'+rColor(r)+';border-radius:10px"></div></div><span class="display" style="font-size:1.1rem;color:'+rColor(r)+';flex-shrink:0">'+r+'%</span></div>':'')+'<div style="border-top:1px solid var(--border2);padding-top:10px"><div class="label" style="margin-bottom:8px">Actions archived</div>'+(l.actions||[]).map(a=>'<div style="display:flex;gap:8px;padding:5px 0;border-bottom:1px solid var(--border2)"><span style="flex-shrink:0">'+a.icon+'</span><span style="font-size:.74rem;color:var(--sub);line-height:1.4">'+a.text+'</span></div>').join('')+'</div><div style="text-align:right;margin-top:8px"><span style="font-size:.72rem;color:var(--accent);font-weight:700">View full record \u2192</span></div></div></div>';}).join('');}else{if(!S.savedActions.length){list.innerHTML=emptyState('vote');return;}const g={};S.savedActions.forEach(a=>{(g[a.leaderName]=g[a.leaderName]||[]).push(a);});list.innerHTML=Object.entries(g).map(([name,acts])=>'<div style="margin-bottom:20px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;padding:0 4px"><div style="width:6px;height:6px;border-radius:50%;background:'+({D:'#2563eb',R:'#dc2626',I:'#d97706'}[acts[0].leaderParty]||'#6b7280')+'"></div><span style="font-weight:800;font-size:.85rem">'+name+'</span><span style="font-size:.7rem;color:var(--dim)">'+acts[0].leaderState+'</span></div>'+acts.map(a=>'<div class="card" style="margin-bottom:8px"><div class="saved-banner"><span>\uD83D\uDD16 SAVED \u00B7 '+(a.savedAt||'')+'</span><button class="rm-btn" onclick="rmAction(\''+a.key+'\')">Remove \u2715</button></div><div style="padding:12px 14px;display:flex;gap:10px"><span style="font-size:1rem;flex-shrink:0">'+a.icon+'</span><div style="flex:1"><div style="font-size:.83rem;color:#d1d5db;line-height:1.5">'+a.text+'</div>'+(a.date?'<div style="font-size:.63rem;color:var(--dim);margin-top:6px">\uD83D\uDDD3 '+a.date+'</div>':'')+'</div></div></div>').join('')+'</div>').join('');}}
-function rmLeader(id){S.savedLeaders=S.savedLeaders.filter(s=>s.id!==id);saveStorage();updateBadge();renderSaved();}
-function rmAction(key){S.savedActions=S.savedActions.filter(s=>s.key!==key);saveStorage();updateBadge();renderSaved();}
-function emptyState(t){return '<div style="text-align:center;padding:64px 20px;color:var(--dim)"><div style="font-size:3rem;margin-bottom:16px">\uD83D\uDD16</div><p style="font-weight:700;color:var(--muted);margin-bottom:8px">Nothing saved yet</p><p style="font-size:.82rem;line-height:1.65">Tap the bookmark on any '+t+' to save it here.<br/>Saved items <strong style="color:var(--sub)">never drop off</strong>.</p></div>';}
-loadStorage();updateBadge();
+
+function mkPrompt(state,county,roles){
+  return `You are a nonpartisan civic data assistant. Return a JSON array of ${roles.length} objects for these officials representing ${county} County, ${state}:
+${roles.map((r,i)=>`${i+1}. ${r}`).join('\n')}
+
+Return ONLY raw JSON array, no markdown. Each object:
+{"id":"slug","name":"Title. First Last","short":"Last","role":"exact role","level":"federal or state","chamber":"U.S. Senate|U.S. House|Executive|State Senate|State House","party":"D|R|I","partyFull":"Democrat|Republican|Independent","color":"#3b6cf5 D, #e0423a R, #d4850a I","initials":"FL","bio":"One specific sentence about their ${state} record.","helped":3,"harmed":2,"votes":[{"b":"Voted YES on [bill] - specific impact on ${state}","p":true},{"b":"Voted NO on [bill] - blocked benefit","p":false},{"b":"Voted YES on [bill]","p":true},{"b":"Voted YES on [bill]","p":true},{"b":"Voted NO on [bill] - harmful","p":false},{"b":"Voted YES on [bill]","p":true},{"b":"Voted YES on [bill]","p":true},{"b":"Voted NO on [bill]","p":false},{"b":"Voted YES on [bill]","p":true},{"b":"Voted YES on [bill]","p":true}],"actions":[{"id":1,"icon":"✅","impact":"helped","area":"Healthcare","text":"Specific action with real numbers impacting ${county} County, ${state}.","date":"Mar 2026"},{"id":2,"icon":"❌","impact":"harmed","area":"Economy","text":"Specific harmful action.","date":"Jan 2026"},{"id":3,"icon":"✅","impact":"helped","area":"Education","text":"Specific helpful action.","date":"Nov 2025"},{"id":4,"icon":"✅","impact":"helped","area":"Infrastructure","text":"Specific helpful action.","date":"Sep 2025"},{"id":5,"icon":"❌","impact":"harmed","area":"Environment","text":"Specific harmful action.","date":"Jul 2025"}],"stats":[{"l":"Term","v":"2023-2027"},{"l":"Votes Cast","v":"312"},{"l":"Missed Votes","v":"4%"},{"l":"Top Donor","v":"Healthcare: $210K"},{"l":"Bills Sponsored","v":"18"}]}
+Rules: real current officials (Gretchen Whitmer=Michigan Gov, Gary Peters & Elissa Slotkin=Michigan Senators, Gavin Newsom=California Gov etc). helped+harmed=5. votes=exactly 10. Return ONLY JSON array.`;
+}
+
+function fixLeaders(arr,state,county){
+  return arr.map(l=>({
+    ...l,state,county,
+    votes:(l.votes||[]).map(v=>typeof v==='object'&&typeof v.p==='boolean'?v:{b:String(v.b||v),p:true})
+  }));
+}
+
+async function fetchLeaders(state,county){
+  // Two separate calls — keeps each well under token limits
+  const fedRoles=[
+    `U.S. Senator #1 for ${state} (currently serving)`,
+    `U.S. Senator #2 for ${state} (currently serving)`,
+    `U.S. Representative for ${county} County congressional district`
+  ];
+  const stateRoles=[
+    `Governor of ${state} (currently serving)`,
+    `Lieutenant Governor of ${state}`,
+    `State Senator representing ${county} County`,
+    `State Representative #1 for ${county} County`,
+    `State Representative #2 for ${county} County`
+  ];
+
+  const [fedRes,staRes]=await Promise.allSettled([
+    claudeCall(mkPrompt(state,county,fedRoles)),
+    claudeCall(mkPrompt(state,county,stateRoles))
+  ]);
+
+  const out=[];
+  const errs=[];
+  if(fedRes.status==='fulfilled')out.push(...fixLeaders(fedRes.value,state,county));
+  else errs.push('Federal: '+fedRes.reason?.message);
+  if(staRes.status==='fulfilled')out.push(...fixLeaders(staRes.value,state,county));
+  else errs.push('State: '+staRes.reason?.message);
+
+  if(!out.length)throw new Error(errs.join(' | '));
+  if(errs.length)console.warn('Partial:',errs.join(' | '));
+  return out;
+}
+
+// ─── ROUTING ──────────────────────────────────────────────────────────────────
+function go(name){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
+  document.getElementById('s-'+name).classList.add('on');
+  A.screen=name;
+  document.getElementById('nav').classList.toggle('on',['feed','saved'].includes(name)&&!!A.county);
+  if(name==='location')initLoc();
+  badge();
+}
+function navTo(tab){
+  A.navTab=tab;
+  document.querySelectorAll('.nb').forEach(b=>b.classList.remove('on'));
+  document.getElementById('nb-'+tab).classList.add('on');
+  if(tab==='saved')renderSaved();
+  go(tab);
+}
+
+// ─── LOCATION ─────────────────────────────────────────────────────────────────
+function initLoc(){
+  A.step='state';
+  document.getElementById('loch').textContent='Pick Your State';
+  document.getElementById('locp').textContent="Select your state — we'll load all your representatives.";
+  document.getElementById('backbtn').style.display='none';
+  document.getElementById('locq').value='';
+  document.getElementById('locbtn').disabled=true;
+  document.getElementById('locbtn').textContent='Select a state to continue';
+  syncSteps();renderGrid(STATES,'state');
+}
+function backState(){
+  A.step='state';A.state=null;A.county=null;
+  document.getElementById('loch').textContent='Pick Your State';
+  document.getElementById('locp').textContent="Select your state — we'll load all your representatives.";
+  document.getElementById('backbtn').style.display='none';
+  document.getElementById('locq').value='';
+  document.getElementById('sv1').textContent='Choose one';
+  document.getElementById('sv2').textContent='Choose one';
+  document.getElementById('locbtn').disabled=true;
+  document.getElementById('locbtn').textContent='Select a state to continue';
+  syncSteps();renderGrid(STATES,'state');
+}
+function filterLoc(){
+  const q=document.getElementById('locq').value.toLowerCase();
+  if(A.step==='state')renderGrid(STATES.filter(s=>s.toLowerCase().includes(q)),'state');
+  else renderGrid((CY[A.state]||[]).filter(c=>c.toLowerCase().includes(q)),'county');
+}
+function renderGrid(items,type){
+  document.getElementById('locgrid').innerHTML=items.map(item=>{
+    const sel=type==='state'?A.state===item:A.county===item;
+    return `<button onclick="pick('${item.replace(/'/g,"\\'")}','${type}')"
+      style="padding:11px 13px;border-radius:11px;text-align:left;cursor:pointer;font-family:'DM Sans',sans-serif;
+      font-size:.8rem;font-weight:${sel?700:400};transition:all .14s;
+      border:1px solid ${sel?'var(--gold)':'var(--b1)'};
+      background:${sel?'rgba(245,200,66,.1)':'var(--s1)'};
+      color:${sel?'var(--gold)':'var(--sub)'}">
+      ${item}</button>`;
+  }).join('');
+}
+function pick(item,type){
+  if(type==='state'){
+    A.state=item;A.county=null;A.step='county';
+    document.getElementById('loch').textContent='Pick Your County';
+    document.getElementById('locp').textContent=`Counties in ${item} — pick yours.`;
+    document.getElementById('backbtn').style.display='block';
+    document.getElementById('locq').value='';
+    document.getElementById('sv1').textContent=item;
+    document.getElementById('sv2').textContent='Choose one';
+    document.getElementById('locbtn').disabled=true;
+    document.getElementById('locbtn').textContent='Select your county to continue';
+    syncSteps();renderGrid(CY[item]||[],'county');
+  }else{
+    A.county=item;
+    document.getElementById('sv2').textContent=item;
+    document.getElementById('locbtn').disabled=false;
+    document.getElementById('locbtn').textContent=`Load ${item} Leaders →`;
+    renderGrid(CY[A.state]||[],'county');syncSteps();
+  }
+}
+function syncSteps(){
+  document.getElementById('st1').className='step'+(A.step==='state'?' act':A.state?' done':'');
+  document.getElementById('st2').className='step'+(A.step==='county'?' act':A.county?' done':'');
+  document.getElementById('sn1').textContent=A.state&&A.step!=='state'?'✓':'1';
+  document.getElementById('sn2').textContent=A.county?'✓':'2';
+}
+
+async function loadLeaders(){
+  if(!A.county)return;
+  document.getElementById('locpill').textContent=`📍 ${A.county}, ${A.state} ▾`;
+  A.filter='All';navTo('feed');
+  document.getElementById('feedlist').innerHTML=`
+    <div style="padding:40px 20px;text-align:center">
+      <div class="spin"></div>
+      <p style="color:var(--sub);font-size:.83rem;line-height:1.8;margin-top:14px">
+        Loading all leaders for<br/>
+        <strong style="color:var(--gold)">${A.county} County, ${A.state}</strong><br/><br/>
+        🇺🇸 U.S. Senators + Representative<br/>
+        🏢 Governor + Lt. Governor<br/>
+        🏛️ State Senators + Representatives<br/><br/>
+        <span style="color:var(--dim);font-size:.74rem">Takes about 15–20 seconds…</span>
+      </p>
+    </div>`;
+  try{
+    A.leaders=await fetchLeaders(A.state,A.county);
+    renderFeed();
+  }catch(err){
+    document.getElementById('feedlist').innerHTML=`
+      <div style="background:rgba(240,86,74,.08);border:1px solid rgba(240,86,74,.2);border-radius:14px;padding:18px;margin-bottom:12px;color:#f09090;font-size:.82rem;line-height:1.7">
+        ⚠️ <strong>Could not load leaders.</strong><br/><br/>
+        Check your internet connection and try again.<br/>
+        <span style="font-size:.7rem;color:var(--sub)">Error: ${err.message}</span>
+      </div>
+      <button class="btn" onclick="loadLeaders()">🔄 Try Again</button>`;
+  }
+}
+
+// ─── FEED ─────────────────────────────────────────────────────────────────────
+const FILTERS=['All','🇺🇸 Federal','🏛️ State','U.S. Senate','U.S. House','Governor','State Senate','State House','✅ High Rated','❌ Low Rated'];
+
+function renderFeed(){
+  const fed=A.leaders.filter(l=>l.level==='federal').length;
+  const sta=A.leaders.filter(l=>l.level==='state').length;
+  document.getElementById('feedmeta').textContent=`🇺🇸 ${fed} federal · 🏛️ ${sta} state officials`;
+  document.getElementById('feedchips').innerHTML=FILTERS.map(f=>
+    `<button class="chip${A.filter===f?' on':''}" onclick="setF('${f.replace(/'/g,"\\'")}')">${f}</button>`
+  ).join('');
+  const items=getFiltered();
+  const list=document.getElementById('feedlist');
+  if(!items.length){list.innerHTML=`<div style="text-align:center;padding:56px 20px;color:var(--dim)"><div style="font-size:2.2rem;margin-bottom:10px">🔍</div><p>No leaders match this filter.</p></div>`;return;}
+  list.innerHTML=items.map((l,i)=>cardHTML(l,i)).join('');
+}
+function getFiltered(){
+  const f=A.filter;
+  if(f.includes('Federal'))return A.leaders.filter(l=>l.level==='federal');
+  if(f==='🏛️ State')return A.leaders.filter(l=>l.level==='state');
+  if(f==='U.S. Senate')return A.leaders.filter(l=>l.chamber==='U.S. Senate');
+  if(f==='U.S. House')return A.leaders.filter(l=>l.chamber==='U.S. House');
+  if(f==='Governor')return A.leaders.filter(l=>l.role==='Governor'||l.role==='Lieutenant Governor');
+  if(f==='State Senate')return A.leaders.filter(l=>l.chamber==='State Senate');
+  if(f==='State House')return A.leaders.filter(l=>l.chamber==='State House');
+  if(f.includes('High'))return A.leaders.filter(l=>{const r=rtng(l);return r!==null&&r>=70;});
+  if(f.includes('Low'))return A.leaders.filter(l=>{const r=rtng(l);return r!==null&&r<50;});
+  return A.leaders;
+}
+function setF(f){A.filter=f;renderFeed();}
+
+// ─── METER ────────────────────────────────────────────────────────────────────
+function meter(l,compact){
+  const r=rtng(l),tot=l.votes?.length||0;
+  if(r===null)return`<div style="background:var(--s2);border:1px solid var(--b1);border-radius:12px;padding:10px 13px;margin-top:9px"><div class="lbl" style="margin-bottom:3px">📊 People's Benefit Rating</div><div style="font-size:.72rem;color:var(--dim)">Vote data loading…</div></div>`;
+  const c=rc(r),ben=l.votes.filter(v=>v.p).length;
+  const pct=r+'%';
+  return`<div style="background:${r>=70?'rgba(54,214,122,.05)':r>=45?'rgba(245,200,66,.05)':'rgba(240,86,74,.05)'};border:1px solid ${r>=70?'rgba(54,214,122,.2)':r>=45?'rgba(245,200,66,.2)':'rgba(240,86,74,.2)'};border-radius:13px;padding:${compact?'10px 13px':'15px'};margin-top:${compact?8:11}px">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:7px">
+    <div><div class="lbl" style="margin-bottom:2px">📊 People's Benefit Rating</div><div style="font-size:.68rem;color:var(--sub)">${tot} votes tracked</div></div>
+    <div style="text-align:right">
+      <div class="hd" style="font-size:${compact?'1.85rem':'2.4rem'};color:${c}">${pct}</div>
+      <div style="font-size:.58rem;color:${c};font-weight:700;text-transform:uppercase;letter-spacing:.07em">${re(r)} ${rl(r)}</div>
+    </div>
+  </div>
+  <div style="height:8px;background:rgba(255,255,255,.06);border-radius:20px;overflow:hidden;margin-bottom:7px">
+    <div style="height:100%;width:${pct};background:${c};border-radius:20px"></div>
+  </div>
+  <div style="display:flex;gap:14px;font-size:.7rem">
+    <span style="color:var(--sub)"><strong style="color:var(--green)">${ben}</strong> benefited</span>
+    <span style="color:var(--sub)"><strong style="color:var(--red)">${tot-ben}</strong> did not</span>
+  </div>
+  ${!compact&&r<50?`<div style="margin-top:9px;font-size:.7rem;color:#f09090;line-height:1.6;background:rgba(240,86,74,.07);border-radius:8px;padding:7px 10px">⚠️ Less than half of this leader's votes benefited their constituents.</div>`:''}
+</div>`;
+}
+
+// ─── CARD ─────────────────────────────────────────────────────────────────────
+function cardHTML(l,i){
+  const sv=isSL(l.id),pc=PC[l.party]||'#777';
+  const delay=['','d1','d2','d3','d4','d5'][Math.min(i,5)];
+  const isFed=l.level==='federal';
+  const isGov=l.role==='Governor'||l.role==='Lieutenant Governor';
+  const lc=isFed?'var(--gold)':'var(--blue)';
+  const lb=isFed?'rgba(245,200,66,.06)':'rgba(79,142,247,.07)';
+  const lbdr=isFed?'rgba(245,200,66,.14)':'rgba(79,142,247,.16)';
+  const icon=isGov?'🏢':isFed?'🇺🇸':'🏛️';
+  return`<div class="card au ${delay}">
+  <div class="bar" style="background:linear-gradient(90deg,${l.color},${l.color}44)"></div>
+  <div style="padding:6px 13px;display:flex;align-items:center;justify-content:space-between;background:${lb};border-bottom:1px solid ${lbdr}">
+    <span style="font-size:.63rem;font-weight:700;color:${lc};letter-spacing:.06em;text-transform:uppercase">${icon} ${l.role}</span>
+    <span style="font-size:.56rem;font-weight:700;padding:2px 8px;border-radius:20px;background:${lb};border:1px solid ${lbdr};color:${lc}">${isFed?'Federal':'State'}</span>
+  </div>
+  <div style="padding:12px 13px">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+      <div class="av" onclick="openDetail('${l.id}')" style="width:44px;height:44px;background:${l.color}1f;border:2px solid ${l.color}44;color:${l.color};font-size:12px;cursor:pointer">${l.initials}</div>
+      <div style="flex:1;min-width:0;cursor:pointer" onclick="openDetail('${l.id}')">
+        <div style="font-weight:700;font-size:.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${l.name}</div>
+        <div style="font-size:.69rem;color:var(--sub);margin-top:2px">${l.state} · ${l.county}</div>
+      </div>
+      <span class="pill" style="background:${pc}1f;color:${pc};border:1px solid ${pc}44">${l.partyFull}</span>
+      <button onclick="toggleL('${l.id}')" id="bl-${l.id}" style="width:30px;height:30px;border-radius:50%;border:1px solid ${sv?'rgba(245,200,66,.4)':'var(--b1)'};background:${sv?'rgba(245,200,66,.1)':'var(--s2)'};display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:12px;cursor:pointer">${sv?'🔖':'🏷️'}</button>
+    </div>
+    ${meter(l,true)}
+    <div style="margin-top:9px;padding:9px 11px;background:var(--s2);border-radius:10px;cursor:pointer;border:1px solid var(--b2)" onclick="openDetail('${l.id}')">
+      <div class="lbl" style="margin-bottom:3px">⚡ Most Recent Action</div>
+      <div style="font-size:.76rem;line-height:1.5;color:var(--sub)">${l.actions[0]?.icon||'📋'} ${l.actions[0]?.text||'—'}</div>
+      ${l.actions[0]?.date?`<div style="font-size:.61rem;color:var(--dim);margin-top:3px">🗓 ${l.actions[0].date}</div>`:''}
+    </div>
+    <div style="margin-top:9px;border-top:1px solid var(--b2);padding-top:9px">
+      <div class="lbl" style="margin-bottom:6px">Save individual votes</div>
+      ${(l.actions||[]).map(a=>{const ak=l.id+'-'+a.id,as=isSA(ak);return`<div style="display:flex;align-items:flex-start;gap:7px;padding:6px 0;border-bottom:1px solid var(--b2)"><span style="font-size:.8rem;flex-shrink:0;margin-top:1px">${a.icon}</span><span style="flex:1;font-size:.69rem;color:var(--sub);line-height:1.45">${a.text}</span>${a.date?`<span style="font-size:.57rem;color:var(--dim);flex-shrink:0;white-space:nowrap;margin-top:2px">${a.date}</span>`:''}<button onclick="toggleA('${l.id}','${a.id}')" id="ba-${l.id}-${a.id}" style="width:24px;height:24px;border-radius:50%;border:1px solid ${as?'rgba(245,200,66,.4)':'var(--b1)'};background:${as?'rgba(245,200,66,.1)':'var(--s2)'};display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:10px;cursor:pointer">${as?'🔖':'🏷️'}</button></div>`;}).join('')}
+    </div>
+    <div style="text-align:right;margin-top:9px">
+      <button class="btn-g" onclick="openDetail('${l.id}')">Full record + ${l.votes?.length||0} votes →</button>
+    </div>
+  </div>
+</div>`;
+}
+
+// ─── DETAIL ───────────────────────────────────────────────────────────────────
+function openDetail(id){
+  const l=A.leaders.find(x=>x.id===id)||A.savedL.find(x=>x.id===id);
+  if(!l)return;
+  renderDetail(l);
+  document.getElementById('nav').classList.remove('on');
+  go('detail');
+}
+function renderDetail(l){
+  const r=rtng(l),sv=isSL(l.id),pc=PC[l.party]||'#777',isFed=l.level==='federal';
+  document.getElementById('dhero').innerHTML=`
+  <div style="background:linear-gradient(155deg,${l.color}14,var(--bg) 52%);padding:50px 16px 20px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
+      <button onclick="closeDetail()" style="background:var(--s2);border:1px solid var(--b1);border-radius:9px;padding:6px 13px;color:var(--sub);font-size:.77rem;cursor:pointer;font-family:'DM Sans',sans-serif">← Back</button>
+      <button onclick="toggleL('${l.id}')" id="db-${l.id}" style="width:34px;height:34px;border-radius:50%;border:1px solid ${sv?'rgba(245,200,66,.4)':'var(--b1)'};background:${sv?'rgba(245,200,66,.1)':'var(--s2)'};display:flex;align-items:center;justify-content:center;font-size:15px;cursor:pointer">${sv?'🔖':'🏷️'}</button>
+    </div>
+    <div style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;border:1px solid ${isFed?'rgba(245,200,66,.25)':'rgba(79,142,247,.25)'};background:${isFed?'rgba(245,200,66,.07)':'rgba(79,142,247,.07)'};color:${isFed?'var(--gold)':'var(--blue)'};font-size:.6rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;margin-bottom:13px">
+      ${isFed?'🇺🇸 Federal Government':'🏛️ State Government'}
+    </div>
+    <div style="display:flex;align-items:flex-start;gap:13px">
+      <div class="av" style="width:58px;height:58px;background:${l.color}1f;border:2px solid ${l.color}44;color:${l.color};font-size:15px">${l.initials}</div>
+      <div style="flex:1">
+        <h2 class="hd" style="font-size:1.7rem">${l.name}</h2>
+        <p style="color:var(--sub);font-size:.74rem;margin-top:3px">${l.role} · ${l.county}, ${l.state}</p>
+        <div style="display:flex;gap:7px;margin-top:7px;flex-wrap:wrap">
+          <span class="pill" style="background:${pc}1f;color:${pc};border:1px solid ${pc}44">${l.partyFull}</span>
+          <span class="pill" style="background:var(--s2);color:var(--sub);border:1px solid var(--b1)">${l.chamber}</span>
+        </div>
+      </div>
+    </div>
+    <p style="font-size:.77rem;color:var(--sub);line-height:1.65;margin-top:12px">${l.bio||''}</p>
+    <div style="display:flex;gap:7px;margin-top:12px">
+      ${[{lbl:'Rating',val:r!==null?r+'%':'—',c:r!==null?rc(r):'var(--sub)'},{lbl:'Votes',val:l.votes?.length||0,c:'var(--sub)'},{lbl:'Helped',val:l.helped||0,c:'var(--green)'},{lbl:'Harmed',val:l.harmed||0,c:'var(--red)'}].map(s=>`<div style="flex:1;background:var(--s2);border-radius:11px;padding:9px 6px;text-align:center;border:1px solid var(--b2)"><div class="hd" style="font-size:1.3rem;color:${s.c}">${s.val}</div><div style="font-size:.57rem;color:var(--sub);font-weight:700;text-transform:uppercase;letter-spacing:.07em;margin-top:2px">${s.lbl}</div></div>`).join('')}
+    </div>
+    ${meter(l,false)}
+  </div>`;
+
+  document.getElementById('dtabs').innerHTML=`
+    <button class="tab on" id="dt-a" onclick="dtab('a')">⚡ Actions</button>
+    <button class="tab" id="dt-v" onclick="dtab('v')">🗳️ All Votes</button>
+    <button class="tab" id="dt-s" onclick="dtab('s')">📊 Stats</button>`;
+
+  document.getElementById('dpanels').innerHTML=`
+  <div class="tp on" id="dp-a">
+    <div class="lbl" style="margin-bottom:11px">5 Key Actions — ${l.role}</div>
+    ${(l.actions||[]).map((a,i)=>`<div style="display:flex;gap:10px;padding:12px;background:var(--s1);border-radius:13px;margin-bottom:8px;border:1px solid var(--b2);animation:up .3s ease ${i*.05}s both">
+      <span style="font-size:1rem;flex-shrink:0">${a.icon}</span>
+      <div style="flex:1">
+        <div style="font-size:.81rem;line-height:1.55;color:#dde0e8">${a.text}</div>
+        <div style="display:flex;gap:5px;margin-top:7px;flex-wrap:wrap;align-items:center">
+          <span class="pill" style="background:${a.impact==='helped'?'rgba(54,214,122,.12)':'rgba(240,86,74,.12)'};color:${a.impact==='helped'?'var(--green)':'var(--red)'};border:1px solid ${a.impact==='helped'?'rgba(54,214,122,.28)':'rgba(240,86,74,.28)'}">${a.impact}</span>
+          <span class="pill" style="background:var(--s2);color:var(--sub);border:1px solid var(--b1)">${a.area}</span>
+          ${a.date?`<span style="font-size:.59rem;color:var(--dim)">🗓 ${a.date}</span>`:''}
+        </div>
+      </div>
+    </div>`).join('')}
+  </div>
+  <div class="tp" id="dp-v">
+    <div class="lbl" style="margin-bottom:10px">Full Vote Record — ${l.votes?.length||0} items</div>
+    <div class="infobox" style="margin-bottom:12px">
+      <div class="lbl" style="color:var(--gold);margin-bottom:3px">How We Calculate ${r!==null?r+'%':'the Rating'}</div>
+      <p style="font-size:.74rem;color:var(--sub);line-height:1.6">Votes that <strong style="color:var(--green)">benefited</strong> constituents count positively. Votes that <strong style="color:var(--red)">did not</strong> count negatively. Rating = beneficial ÷ total × 100.</p>
+    </div>
+    ${(l.votes||[]).map(v=>`<div style="display:flex;align-items:flex-start;gap:10px;padding:9px 12px;background:var(--s1);border-radius:11px;margin-bottom:5px;border:1px solid var(--b2)">
+      <span style="font-size:.9rem;flex-shrink:0;margin-top:1px">${v.p?'✅':'❌'}</span>
+      <span style="flex:1;font-size:.77rem;color:#cdd0da;line-height:1.5">${v.b}</span>
+      <span class="pill" style="background:${v.p?'rgba(54,214,122,.1)':'rgba(240,86,74,.1)'};color:${v.p?'var(--green)':'var(--red)'};border:1px solid ${v.p?'rgba(54,214,122,.22)':'rgba(240,86,74,.22)'};flex-shrink:0">${v.p?'Helped':'Harmed'}</span>
+    </div>`).join('')}
+  </div>
+  <div class="tp" id="dp-s">
+    <div class="lbl" style="margin-bottom:11px">Accountability Stats</div>
+    ${(l.stats||[]).map(s=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;background:var(--s1);border-radius:13px;margin-bottom:6px;border:1px solid var(--b2)">
+      <span style="font-size:.81rem;color:var(--sub)">${s.l}</span>
+      <span class="hd" style="font-size:1.1rem;color:var(--gold)">${s.v}</span>
+    </div>`).join('')}
+    <div class="infobox">
+      <div class="lbl" style="color:var(--gold);margin-bottom:3px">📌 Data Source</div>
+      <p style="font-size:.74rem;color:var(--sub);line-height:1.6">${isFed?'Federal data from publicly available congressional records and official government sources.':'State data from state legislature websites, governor\'s office records, and news coverage.'} Save any item to preserve it permanently.</p>
+    </div>
+  </div>`;
+  document.getElementById('detscr').scrollTop=0;
+}
+function dtab(k){
+  ['a','v','s'].forEach(t=>{
+    document.getElementById('dt-'+t).classList.toggle('on',t===k);
+    document.getElementById('dp-'+t).classList.toggle('on',t===k);
+  });
+}
+function closeDetail(){
+  if(A.navTab==='saved'){renderSaved();go('saved');}
+  else{renderFeed();go('feed');}
+  if(A.county)document.getElementById('nav').classList.add('on');
+}
+
+// ─── BOOKMARKS ────────────────────────────────────────────────────────────────
+function toggleL(id){
+  const l=A.leaders.find(x=>x.id===id)||A.savedL.find(x=>x.id===id);
+  if(!l)return;
+  const had=isSL(id);
+  if(had)A.savedL=A.savedL.filter(x=>x.id!==id);
+  else A.savedL.unshift({...l,savedAt:ts()});
+  lsSave();badge();
+  const now=!had;
+  ['bl-'+id,'db-'+id].forEach(bid=>{
+    const b=document.getElementById(bid);if(!b)return;
+    b.style.border=`1px solid ${now?'rgba(245,200,66,.4)':'var(--b1)'}`;
+    b.style.background=now?'rgba(245,200,66,.1)':'var(--s2)';
+    b.innerHTML=now?'🔖':'🏷️';
+  });
+  if(A.screen==='saved')renderSaved();
+}
+function toggleA(lid,aid){
+  const key=lid+'-'+aid;
+  const l=A.leaders.find(x=>x.id===lid)||A.savedL.find(x=>x.id===lid);
+  if(!l)return;
+  const a=l.actions.find(x=>String(x.id)===String(aid));
+  if(!a)return;
+  const had=isSA(key);
+  if(had)A.savedA=A.savedA.filter(x=>x.key!==key);
+  else A.savedA.unshift({...a,key,lName:l.name,lState:l.state,lParty:l.party,savedAt:ts()});
+  lsSave();badge();
+  const now=!had,btn=document.getElementById('ba-'+lid+'-'+aid);
+  if(btn){btn.style.border=`1px solid ${now?'rgba(245,200,66,.4)':'var(--b1)'}`;btn.style.background=now?'rgba(245,200,66,.1)':'var(--s2)';btn.innerHTML=now?'🔖':'🏷️';}
+  if(A.screen==='saved')renderSaved();
+}
+function badge(){
+  const t=A.savedL.length+A.savedA.length,b=document.getElementById('nbadge');
+  b.textContent=t;b.classList.toggle('on',t>0);
+  const sc=document.getElementById('svcount');
+  if(sc)sc.textContent=`${A.savedL.length} leaders · ${A.savedA.length} votes`;
+}
+
+// ─── SAVED ────────────────────────────────────────────────────────────────────
+function svTab(t){
+  A.svTab=t;
+  document.getElementById('svtl').classList.toggle('on',t==='l');
+  document.getElementById('svta').classList.toggle('on',t==='a');
+  renderSaved();
+}
+function renderSaved(){
+  badge();
+  const list=document.getElementById('svlist');
+  if(A.svTab==='l'){
+    if(!A.savedL.length){list.innerHTML=emptyState('leader');return;}
+    list.innerHTML=A.savedL.map(l=>{
+      const r=rtng(l),pc=PC[l.party]||'#777',isFed=l.level==='federal';
+      return`<div class="card">
+      <div class="svbar"><span>🔖 Saved · ${l.savedAt||''}</span><button class="rm" onclick="rmL('${l.id}')">Remove ✕</button></div>
+      <div class="bar" style="background:linear-gradient(90deg,${l.color},${l.color}44)"></div>
+      <div style="padding:12px 13px;cursor:pointer" onclick="openDetail('${l.id}')">
+        <div style="font-size:.6rem;font-weight:700;color:${isFed?'var(--gold)':'var(--blue)'};text-transform:uppercase;letter-spacing:.07em;margin-bottom:7px">${isFed?'🇺🇸 Federal':'🏛️ State'} · ${l.role}</div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:9px">
+          <div class="av" style="width:40px;height:40px;background:${l.color}1f;border:2px solid ${l.color}44;color:${l.color};font-size:11px">${l.initials}</div>
+          <div style="flex:1;min-width:0"><div style="font-weight:700;font-size:.88rem">${l.name}</div><div style="font-size:.69rem;color:var(--sub);margin-top:1px">${l.county||''}, ${l.state}</div></div>
+          <span class="pill" style="background:${pc}1f;color:${pc};border:1px solid ${pc}44">${l.partyFull}</span>
+        </div>
+        ${r!==null?`<div style="display:flex;align-items:center;gap:9px;margin-bottom:8px"><span style="font-size:.67rem;color:var(--sub);flex-shrink:0">Rating:</span><div style="flex:1;height:5px;background:rgba(255,255,255,.06);border-radius:10px;overflow:hidden"><div style="height:100%;width:${r}%;background:${rc(r)};border-radius:10px"></div></div><span class="hd" style="font-size:1rem;color:${rc(r)};flex-shrink:0">${r}%</span></div>`:''}
+        <div style="border-top:1px solid var(--b2);padding-top:8px"><div class="lbl" style="margin-bottom:5px">Actions archived at save</div>${(l.actions||[]).map(a=>`<div style="display:flex;gap:6px;padding:4px 0;border-bottom:1px solid var(--b2)"><span style="flex-shrink:0">${a.icon}</span><span style="font-size:.7rem;color:var(--sub);line-height:1.4">${a.text}</span></div>`).join('')}</div>
+        <div style="text-align:right;margin-top:7px"><span style="font-size:.7rem;color:var(--gold);font-weight:700">View full record →</span></div>
+      </div></div>`;
+    }).join('');
+  }else{
+    if(!A.savedA.length){list.innerHTML=emptyState('vote');return;}
+    const g={};A.savedA.forEach(a=>{(g[a.lName]=g[a.lName]||[]).push(a);});
+    list.innerHTML=Object.entries(g).map(([name,acts])=>`
+    <div style="margin-bottom:18px">
+      <div style="display:flex;align-items:center;gap:7px;margin-bottom:7px;padding:0 2px">
+        <div style="width:5px;height:5px;border-radius:50%;background:${PC[acts[0].lParty]||'#777'}"></div>
+        <span style="font-weight:700;font-size:.82rem">${name}</span>
+        <span style="font-size:.67rem;color:var(--dim)">${acts[0].lState}</span>
+      </div>
+      ${acts.map(a=>`<div class="card" style="margin-bottom:7px">
+        <div class="svbar"><span>🔖 Saved · ${a.savedAt||''}</span><button class="rm" onclick="rmA('${a.key}')">Remove ✕</button></div>
+        <div style="padding:11px 13px;display:flex;gap:9px">
+          <span style="font-size:.95rem;flex-shrink:0">${a.icon}</span>
+          <div style="flex:1"><div style="font-size:.79rem;color:#dde0e8;line-height:1.5">${a.text}</div>${a.date?`<div style="font-size:.59rem;color:var(--dim);margin-top:5px">🗓 ${a.date}</div>`:''}</div>
+        </div>
+      </div>`).join('')}
+    </div>`).join('');
+  }
+}
+function rmL(id){A.savedL=A.savedL.filter(x=>x.id!==id);lsSave();badge();renderSaved();}
+function rmA(key){A.savedA=A.savedA.filter(x=>x.key!==key);lsSave();badge();renderSaved();}
+function emptyState(t){return`<div style="text-align:center;padding:60px 20px;color:var(--dim)"><div style="font-size:2.8rem;margin-bottom:14px">🔖</div><p style="font-weight:700;color:var(--sub);margin-bottom:7px">Nothing saved yet</p><p style="font-size:.78rem;line-height:1.65">Tap 🏷️ on any ${t} to save it here.<br/><strong style="color:var(--sub)">Saved items never drop off.</strong></p></div>`;}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+lsLoad();badge();
 </script>
 </body>
 </html>
